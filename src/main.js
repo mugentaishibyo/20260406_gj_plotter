@@ -26,6 +26,9 @@ const textInput = document.getElementById('text-input');
 const addBtn = document.getElementById('add-btn');
 const exportTimelineBtn = document.getElementById('export-timeline');
 const exportScriptBtn = document.getElementById('export-script');
+const subtitleOverlay = document.getElementById('subtitle-overlay');
+const playPauseBtn = document.getElementById('play-pause-btn');
+const controlsOverlay = document.getElementById('controls-overlay');
 
 /**
  * 初期化: キャラクターセレクターの生成
@@ -56,6 +59,7 @@ videoFile.addEventListener('change', (e) => {
     const url = URL.createObjectURL(file);
     videoPreview.src = url;
     videoOverlay.style.display = 'none';
+    controlsOverlay.style.display = 'flex'; // 再生ボタンを表示
     state.isVideoLoaded = true;
     
     videoPreview.onloadedmetadata = () => {
@@ -90,7 +94,47 @@ function updateTimeline() {
     return `${h}:${m}:${s}.${ms}`;
   };
   currentTimeDisplay.textContent = format(state.currentTime);
+
+  // 字幕の更新
+  updateSubtitleDisplay();
 }
+
+/**
+ * 動画プレビュー上の字幕を更新
+ */
+function updateSubtitleDisplay() {
+  const currentSub = state.subtitles.find(sub => 
+    state.currentTime >= sub.startTime && 
+    state.currentTime <= sub.startTime + sub.duration
+  );
+
+  if (currentSub) {
+    subtitleOverlay.textContent = currentSub.text;
+    subtitleOverlay.style.color = currentSub.charColor;
+    subtitleOverlay.style.display = 'block';
+  } else {
+    subtitleOverlay.style.display = 'none';
+  }
+}
+
+/**
+ * 再生 / 一時停止の切り替え
+ */
+function togglePlay() {
+  if (!state.isVideoLoaded) return;
+  
+  if (videoPreview.paused) {
+    videoPreview.play();
+    playPauseBtn.textContent = '⏸';
+  } else {
+    videoPreview.pause();
+    playPauseBtn.textContent = '▶';
+  }
+}
+
+playPauseBtn.onclick = togglePlay;
+// ビデオ本体のクリックでも切り替え（モバイルを考慮）
+videoPreview.onclick = togglePlay;
 
 /**
  * 字幕アイテムの追加

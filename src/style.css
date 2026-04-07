@@ -52,12 +52,73 @@ body {
   position: relative;
   flex-shrink: 0;
   border-bottom: 1px solid var(--border-color);
+  overflow: hidden;
 }
 
 #video-preview {
   width: 100%;
   height: 100%;
   object-fit: contain;
+}
+
+/* Subtitle Overlay Style */
+.subtitle-overlay {
+  position: absolute;
+  bottom: 15%;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  pointer-events: none;
+  z-index: 5;
+  font-weight: bold;
+  font-size: clamp(14px, 5vw, 24px);
+  color: white;
+  text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 0 2px 0 #000, 0 -2px 0 #000, 2px 0 0 #000, -2px 0 0 #000;
+  padding: 0 10px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+}
+
+/* Playback Controls Overlay */
+.controls-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: none; /* 初期状態は非表示 */
+  align-items: center;
+  justify-content: center;
+  z-index: 4;
+  opacity: 0;
+  transition: opacity 0.3s;
+  background: rgba(0,0,0,0.2);
+}
+
+.video-container:hover .controls-overlay,
+.video-container:active .controls-overlay {
+  opacity: 1;
+}
+
+.play-pause-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(4px);
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  transition: transform 0.2s;
+}
+
+.play-pause-btn:active {
+  transform: scale(0.9);
 }
 
 .video-overlay {

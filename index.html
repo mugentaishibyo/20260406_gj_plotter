@@ -14,6 +14,12 @@
       <!-- Video Preview -->
       <section class="video-container" id="video-ui">
         <video id="video-preview" playsinline></video>
+        <!-- 字幕表示用オーバーレイ -->
+        <div id="subtitle-overlay" class="subtitle-overlay"></div>
+        <!-- 再生/一時停止などのコントロール -->
+        <div class="controls-overlay" id="controls-overlay">
+          <button id="play-pause-btn" class="play-pause-btn">▶</button>
+        </div>
         <div class="video-overlay" id="video-overlay">
           <label for="video-file" class="file-input-label">参照動画を選択</label>
           <input type="file" id="video-file" accept="video/*" hidden>
