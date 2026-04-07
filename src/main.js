@@ -5,12 +5,8 @@ import { countMoras } from './lib/mora-counter.js';
  * 状態管理
  */
 const state = {
-  characters: [
-    { id: 'aivoice', name: 'AIVoice女声', color: '#ff4d4d', moraRate: 0.15 },
-    { id: 'cevio', name: 'Cevio女声', color: '#4da6ff', moraRate: 0.15 },
-    { id: 'voicevox', name: 'ボイスボックス女声', color: '#4dff88', moraRate: 0.15 }
-  ],
-  selectedCharId: 'aivoice',
+  characters: [],
+  selectedCharId: '',
   subtitles: [],
   currentTime: 0,
   pixelsPerSecond: 100, // 1秒 = 100px
@@ -204,5 +200,18 @@ timelineContainer.onclick = (e) => {
   videoPreview.currentTime = time;
 };
 
-// 初期化実行
-initCharSelector();
+// 初期化実行: キャラクター設定を読み込む
+async function init() {
+  try {
+    const response = await fetch('./characters.json');
+    state.characters = await response.json();
+    if (state.characters.length > 0) {
+      state.selectedCharId = state.characters[0].id;
+    }
+    initCharSelector();
+  } catch (error) {
+    console.error('キャラクター設定の読み込みに失敗しました:', error);
+  }
+}
+
+init();
