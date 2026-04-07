@@ -101,7 +101,9 @@ function addSubtitle() {
 
   const char = state.characters.find(c => c.id === state.selectedCharId);
   const moras = countMoras(text);
-  const duration = Math.max(0.2, moras * char.moraRate); // 最低0.2秒
+  const moraLength = moras * (char.moraRate || 0.15); // モーラ長
+  const speechRate = char.speechRate || 1.0; // 話速
+  const duration = Math.max(0.2, moraLength / speechRate); // 最低0.2秒
   
   // YMM4のように、現在の再生ヘッド位置から配置
   // もし前のアイテムと被る場合は、前のアイテムの直後に配置するなどの制御も可能だが、

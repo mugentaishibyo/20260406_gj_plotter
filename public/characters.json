@@ -1,5 +1,5 @@
 [
-  { "id": "aivoice", "name": "AIVoice女声", "color": "#ff4d4d", "moraRate": 0.15 },
-  { "id": "cevio", "name": "Cevio女声", "color": "#4da6ff", "moraRate": 0.15 },
-  { "id": "voicevox", "name": "ボイスボックス女声", "color": "#4dff88", "moraRate": 0.15 }
+  { "id": "aivoice", "name": "AIVoice女声", "color": "#ff4d4d", "moraRate": 0.15, "speechRate": 1.0 },
+  { "id": "cevio", "name": "Cevio女声", "color": "#4da6ff", "moraRate": 0.15, "speechRate": 1.0 },
+  { "id": "voicevox", "name": "ボイスボックス女声", "color": "#4dff88", "moraRate": 0.15, "speechRate": 1.0 }
 ]
