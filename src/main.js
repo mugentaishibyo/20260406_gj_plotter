@@ -2,11 +2,21 @@ import './style.css';
 import { countMoras } from './lib/mora-counter.js';
 
 /**
+ * アプリケーション設定（定数）
+ */
+const CONFIG = {
+  LAYER_COUNT: 5,           // タイムラインのレイヤー階層数
+  LAYER_HEIGHT: 44,         // 1レイヤーあたりの高さ(px)
+  LONG_TAP_DURATION_MS: 500 // ロングタップを判定する時間(ミリ秒)
+};
+
+/**
  * 状態管理
  */
 const state = {
   characters: [],
   selectedCharId: '',
+  selectedLayerIndex: 0, // 現在選択されているレイヤー
   subtitles: [],
   currentTime: 0,
   pixelsPerSecond: 100, // 1秒 = 100px
@@ -158,6 +168,7 @@ function addSubtitle() {
     id: Date.now(),
     startTime,
     duration,
+    layer: state.selectedLayerIndex, // レイヤー情報を追加
     charName: char.name,
     charColor: char.color,
     text
@@ -183,10 +194,10 @@ textInput.onkeydown = (e) => {
 };
 
 /**
- * 字幕の描画
+ * 字幕の描画とドラッグイベントの設定
  */
 function renderSubtitles() {
-  // 既存のアイテムを削除（playhead以外）
+  // 既存のアイテムを削除（playheadとlayer-grid以外）
   const items = timelineContent.querySelectorAll('.subtitle-item');
   items.forEach(i => i.remove());
 
@@ -195,12 +206,102 @@ function renderSubtitles() {
     div.className = 'subtitle-item';
     div.style.left = `${sub.startTime * state.pixelsPerSecond}px`;
     div.style.width = `${sub.duration * state.pixelsPerSecond}px`;
-    div.style.backgroundColor = sub.charColor + '99'; // 透明度追加
+    div.style.backgroundColor = sub.charColor + '99';
     div.style.borderColor = sub.charColor;
-    div.style.top = '10px'; // とりあえず1行目
+    div.style.top = `${sub.layer * CONFIG.LAYER_HEIGHT}px`; // レイヤー位置に配置
     div.textContent = `[${sub.charName}] ${sub.text}`;
+    div.dataset.id = sub.id;
+
+    // ドラッグ＆ドロップ（ロングタップ）イベントの実装
+    let longTapTimer = null;
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+    let initialLeft = 0;
+    let initialTop = 0;
+
+    const onPointerDown = (e) => {
+      // 左クリックまたはタッチのみ
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      
+      e.stopPropagation(); // タイムラインのシーク発火を防ぐ
+      startX = e.clientX;
+      startY = e.clientY;
+      initialLeft = parseFloat(div.style.left) || 0;
+      initialTop = parseFloat(div.style.top) || 0;
+
+      // ロングタップ判定を開始
+      longTapTimer = setTimeout(() => {
+        isDragging = true;
+        div.classList.add('dragging');
+        div.setPointerCapture(e.pointerId);
+      }, CONFIG.LONG_TAP_DURATION_MS);
+
+      div.addEventListener('pointermove', onPointerMove);
+      div.addEventListener('pointerup', onPointerUp);
+      div.addEventListener('pointercancel', onPointerCancel);
+    };
+
+    const updatePosition = (e) => {
+      if (!isDragging) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      div.style.left = `${initialLeft + dx}px`;
+      div.style.top = `${initialTop + dy}px`;
+    };
+
+    const onPointerMove = (e) => {
+      // ロングタップ判定前に動いたらキャンセル
+      if (!isDragging) {
+        const dx = Math.abs(e.clientX - startX);
+        const dy = Math.abs(e.clientY - startY);
+        if (dx > 10 || dy > 10) {
+          clearTimeout(longTapTimer);
+        }
+        return;
+      }
+      e.preventDefault();
+      updatePosition(e);
+    };
+
+    const finalizeDrag = (e) => {
+      clearTimeout(longTapTimer);
+      div.removeEventListener('pointermove', onPointerMove);
+      div.removeEventListener('pointerup', onPointerUp);
+      div.removeEventListener('pointercancel', onPointerCancel);
+      div.releasePointerCapture(e.pointerId);
+
+      if (!isDragging) return; // ロングタップ成立前のクリック等
+
+      isDragging = false;
+      div.classList.remove('dragging');
+
+      // 新しい startTime と layer を計算
+      const newLeft = parseFloat(div.style.left);
+      let newTime = newLeft / state.pixelsPerSecond;
+      if (newTime < 0) newTime = 0;
+
+      const newTop = parseFloat(div.style.top) + (CONFIG.LAYER_HEIGHT / 2); // 中心座標で判定
+      let newLayer = Math.floor(newTop / CONFIG.LAYER_HEIGHT);
+      if (newLayer < 0) newLayer = 0;
+      if (newLayer >= CONFIG.LAYER_COUNT) newLayer = CONFIG.LAYER_COUNT - 1;
+
+      // stateの更新
+      const subIndex = state.subtitles.findIndex(s => s.id === sub.id);
+      if (subIndex !== -1) {
+        state.subtitles[subIndex].startTime = newTime;
+        state.subtitles[subIndex].layer = newLayer;
+      }
+      
+      // 再描画
+      renderSubtitles();
+    };
+
+    const onPointerUp = (e) => finalizeDrag(e);
+    const onPointerCancel = (e) => finalizeDrag(e);
+
+    div.addEventListener('pointerdown', onPointerDown);
     
-    // 長押しで削除などの機能は今後検討
     timelineContent.appendChild(div);
   });
 }
@@ -246,8 +347,37 @@ timelineContainer.onclick = (e) => {
   videoPreview.currentTime = time;
 };
 
-// 初期化実行: キャラクター設定を読み込む
+// 初期化実行: レイヤーとキャラクター設定を読み込む
+function initLayers() {
+  // 古いレイヤーDOMを削除
+  timelineContent.querySelectorAll('.timeline-layer').forEach(el => el.remove());
+
+  for (let i = 0; i < CONFIG.LAYER_COUNT; i++) {
+    const layerDiv = document.createElement('div');
+    layerDiv.className = 'timeline-layer';
+    layerDiv.style.top = `${i * CONFIG.LAYER_HEIGHT}px`;
+    layerDiv.style.height = `${CONFIG.LAYER_HEIGHT}px`;
+    
+    if (i === state.selectedLayerIndex) {
+      layerDiv.classList.add('selected');
+    }
+
+    layerDiv.onclick = (e) => {
+      // サブタイトルのクリックが伝播してきた場合は無視
+      if (e.target !== layerDiv && e.target !== timelineContent && e.target.className !== 'timeline-layer-grid') return;
+      state.selectedLayerIndex = i;
+      // UI更新
+      document.querySelectorAll('.timeline-layer').forEach((el, index) => {
+        el.classList.toggle('selected', index === i);
+      });
+    };
+
+    timelineContent.insertBefore(layerDiv, timelineContent.firstChild);
+  }
+}
+
 async function init() {
+  initLayers();
   try {
     const response = await fetch('./characters.json');
     state.characters = await response.json();
