@@ -219,8 +219,7 @@ body {
 
 .subtitle-item {
   position: absolute;
-  /* fixed height related to layer height via js inline style or css var, but we'll set it here to almost layer height */
-  height: calc(100% - 6px); /* padding for spacing within layer */
+  /* height will be set via JS inline style */
   margin-top: 3px;
   border-radius: 4px;
   padding: 4px 8px;
@@ -246,6 +245,12 @@ body {
   z-index: 100;
   box-shadow: 0 8px 16px rgba(0,0,0,0.5);
   cursor: grabbing;
+}
+
+.subtitle-item.selected {
+  border: 2px solid white;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  z-index: 10;
 }
 
 /* Input Section */
