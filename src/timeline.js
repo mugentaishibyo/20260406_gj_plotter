@@ -183,64 +183,29 @@ function setupDragAndDrop(div, sub) {
 }
 
 /**
- * タイムラインのスワイプスクロールとシーク制御
+ * タイムラインのシーク制御とネイティブスクロール
  */
 export function setupTimelineEvents() {
-  let isScrolling = false;
-  let startX = 0;
-  let scrollLeftStart = 0;
-  let moved = false;
+  // マニュアルでのポインターイベントによるスクロール処理を削除し、
+  // CSSの overflow-x: auto によるネイティブスクロールに任せることで、
+  // スマートフォンでの怪しいスクロール挙動を解消します。
 
-  const onPointerDown = (e) => {
-    // 字幕アイテム以外の場所がクリックされたか確認
+  timelineContainer.addEventListener('click', (e) => {
+    // 字幕アイテム以外の場所がクリックされたか確認（余白のタップでシーク）
     if (e.target !== timelineContainer && e.target !== timelineContent && e.target.className !== 'timeline-layer-grid' && !e.target.classList.contains('timeline-layer')) return;
 
-    startX = e.clientX;
-    scrollLeftStart = timelineContainer.scrollLeft;
-    isScrolling = true;
-    moved = false;
-
-    timelineContainer.addEventListener('pointermove', onPointerMove);
-    timelineContainer.addEventListener('pointerup', onPointerUp);
-    timelineContainer.addEventListener('pointercancel', onPointerUp);
-    timelineContainer.setPointerCapture(e.pointerId);
-  };
-
-  const onPointerMove = (e) => {
-    if (!isScrolling) return;
-    const dx = e.clientX - startX;
-    if (Math.abs(dx) > 10) {
-      moved = true;
+    const rect = timelineContent.getBoundingClientRect();
+    const offsetX = e.clientX - rect.left;
+    let time = offsetX / state.pixelsPerSecond;
+    if (time < 0) time = 0;
+    
+    advanceVideoTime(time);
+    
+    // 他の箇所がタップされたら選択解除する
+    if (state.selectedSubtitleId !== null) {
+      state.selectedSubtitleId = null;
+      renderSubtitles();
+      updateSelectionUI();
     }
-    if (moved) {
-      timelineContainer.scrollLeft = scrollLeftStart - dx;
-    }
-  };
-
-  const onPointerUp = (e) => {
-    if (!isScrolling) return;
-    isScrolling = false;
-    timelineContainer.releasePointerCapture(e.pointerId);
-    timelineContainer.removeEventListener('pointermove', onPointerMove);
-    timelineContainer.removeEventListener('pointerup', onPointerUp);
-    timelineContainer.removeEventListener('pointercancel', onPointerUp);
-
-    if (!moved) {
-      // 移動が少なければクリックとして扱い、シークまたは選択解除
-      const rect = timelineContent.getBoundingClientRect();
-      const offsetX = e.clientX - rect.left;
-      const time = offsetX / state.pixelsPerSecond;
-      
-      advanceVideoTime(time);
-      
-      // 選択解除
-      if (state.selectedSubtitleId !== null) {
-        state.selectedSubtitleId = null;
-        renderSubtitles();
-        updateSelectionUI();
-      }
-    }
-  };
-
-  timelineContainer.addEventListener('pointerdown', onPointerDown);
+  });
 }

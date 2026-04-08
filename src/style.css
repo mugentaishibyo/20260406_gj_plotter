@@ -253,6 +253,63 @@ body {
   z-index: 10;
 }
 
+/* Jog Wheel Section */
+.jog-wheel-section {
+  padding: 8px 16px;
+  background: var(--bg-dark);
+  border-top: 1px solid var(--border-color);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.jog-wheel-container {
+  height: 40px;
+  background: #1a1d23;
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+  cursor: ew-resize;
+  touch-action: none;
+}
+
+.jog-wheel-inner {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  pointer-events: none;
+  transition: transform 0.1s linear;
+}
+
+.jog-tick {
+  width: 1px;
+  background: #555;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.jog-tick.major {
+  height: 25px;
+  background: #888;
+  position: relative;
+}
+
+.jog-wheel-marker {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 2px;
+  height: 100%;
+  background: #ff4d4d;
+  transform: translateX(-50%);
+  box-shadow: 0 0 8px rgba(255, 77, 77, 0.5);
+  z-index: 5;
+  pointer-events: none;
+}
+
 /* Input Section */
 .input-section {
   padding: 16px;

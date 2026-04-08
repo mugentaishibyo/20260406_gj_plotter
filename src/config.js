@@ -4,7 +4,8 @@
 export const CONFIG = {
   LAYER_COUNT: 5,           // タイムラインのレイヤー階層数
   LAYER_HEIGHT: 44,         // 1レイヤーあたりの高さ(px)
-  LONG_TAP_DURATION_MS: 500 // ロングタップを判定する時間(ミリ秒)
+  LONG_TAP_DURATION_MS: 500, // ロングタップを判定する時間(ミリ秒)
+  FRAME_RATE: 30            // プレビューの基本フレームレート
 };
 
 /**

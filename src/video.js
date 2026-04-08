@@ -31,25 +31,37 @@ export function setupVideoEvents() {
   });
 
   videoPreview.addEventListener('timeupdate', () => {
-    state.currentTime = videoPreview.currentTime;
-    updateTimeline();
-    
-    // 時間表示の更新
-    const format = (t) => {
-      const h = Math.floor(t / 3600).toString().padStart(2, '0');
-      const m = Math.floor((t % 3600) / 60).toString().padStart(2, '0');
-      const s = Math.floor(t % 60).toString().padStart(2, '0');
-      const ms = Math.floor((t % 1) * 1000).toString().padStart(3, '0');
-      return `${h}:${m}:${s}.${ms}`;
-    };
-    currentTimeDisplay.textContent = format(state.currentTime);
-
-    // 字幕の更新
-    updateSubtitleDisplay();
+    // 動画の再生中の同期処理
+    // シーク中は `advanceVideoTime` 直下の `updateTimeUI` で処理されるが、
+    // 動画が実際に再生中の場合のみ state.currentTime をブラウザから同期する
+    if (!videoPreview.paused) {
+      state.currentTime = videoPreview.currentTime;
+      updateTimeUI();
+    }
   });
 
   playPauseBtn.onclick = togglePlay;
   videoPreview.onclick = togglePlay;
+}
+
+/**
+ * 共通の時間UI更新関数
+ */
+export function updateTimeUI() {
+  updateTimeline();
+  
+  // 時間表示の更新
+  const format = (t) => {
+    const h = Math.floor(t / 3600).toString().padStart(2, '0');
+    const m = Math.floor((t % 3600) / 60).toString().padStart(2, '0');
+    const s = Math.floor(t % 60).toString().padStart(2, '0');
+    const ms = Math.floor((t % 1) * 1000).toString().padStart(3, '0');
+    return `${h}:${m}:${s}.${ms}`;
+  };
+  currentTimeDisplay.textContent = format(state.currentTime);
+
+  // 字幕の更新
+  updateSubtitleDisplay();
 }
 
 /**
@@ -90,5 +102,17 @@ export function getCurrentDuration() {
 }
 
 export function advanceVideoTime(time) {
-  videoPreview.currentTime = time;
+  if (time < 0) time = 0;
+  
+  // 動画が読み込まれている場合は動画要素の時間を更新
+  if (state.isVideoLoaded) {
+    if (videoPreview.duration && time > videoPreview.duration) {
+      time = videoPreview.duration;
+    }
+    videoPreview.currentTime = time;
+  }
+  
+  // 常にstateの時間を更新してUIに即時反映させる（動画非読み込み時も動作させるため）
+  state.currentTime = time;
+  updateTimeUI();
 }

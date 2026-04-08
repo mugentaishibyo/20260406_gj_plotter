@@ -4,6 +4,7 @@ import { setupVideoEvents, advanceVideoTime } from './video.js';
 import { initLayers, renderSubtitles, setupTimelineEvents } from './timeline.js';
 import { setupExportEvents } from './export.js';
 import { countMoras } from './lib/mora-counter.js';
+import { setupJogWheel } from './jog-wheel.js';
 
 // 入力関連のDOM要素
 const charSelector = document.getElementById('char-selector');
@@ -121,6 +122,7 @@ async function init() {
   setupVideoEvents();
   setupTimelineEvents();
   setupExportEvents();
+  setupJogWheel();
   initLayers(); // レイヤーDOM初期化
 
   // キャラクター設定読み込み
