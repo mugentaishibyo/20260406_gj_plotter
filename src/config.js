@@ -14,6 +14,7 @@ export const CONFIG = {
 export const state = {
   characters: [],
   selectedCharId: '',
+  PIN_CHAR_ID: 'pin-item', // ピンアイテム用の特別なID
   selectedLayerIndex: 0, // 現在選択されているレイヤー
   selectedSubtitleId: null, // 現在選択されている字幕のID
   subtitles: [],

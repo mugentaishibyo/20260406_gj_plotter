@@ -15,9 +15,12 @@ export function setupExportEvents() {
 
   exportScriptBtn.onclick = () => {
     let csv = 'キャラクター名,セリフ\n';
-    state.subtitles.sort((a, b) => a.startTime - b.startTime).forEach(sub => {
-      csv += `${sub.charName},"${sub.text.replace(/"/g, '""')}"\n`;
-    });
+    state.subtitles
+      .filter(sub => !sub.isPin) // ピンアイテムを除外
+      .sort((a, b) => a.startTime - b.startTime)
+      .forEach(sub => {
+        csv += `${sub.charName},"${sub.text.replace(/"/g, '""')}"\n`;
+      });
     downloadCSV(csv, 'ymm_script.csv');
   };
 }

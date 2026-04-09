@@ -65,6 +65,9 @@ export function renderSubtitles() {
     if (sub.id === state.selectedSubtitleId) {
       div.classList.add('selected');
     }
+    if (sub.isPin) {
+      div.classList.add('pin-item');
+    }
     div.style.left = `${sub.startTime * state.pixelsPerSecond}px`;
     div.style.width = `${sub.duration * state.pixelsPerSecond}px`;
     div.style.backgroundColor = sub.charColor + '99';
@@ -72,7 +75,7 @@ export function renderSubtitles() {
     div.style.top = `${sub.layer * CONFIG.LAYER_HEIGHT}px`;
     div.style.height = `${CONFIG.LAYER_HEIGHT - 6}px`;
 
-    div.textContent = `[${sub.charName}] ${sub.text}`;
+    div.textContent = sub.isPin ? `📌 ${sub.text}` : `[${sub.charName}] ${sub.text}`;
     div.dataset.id = sub.id;
 
     setupDragAndDrop(div, sub);
