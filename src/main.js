@@ -117,6 +117,13 @@ function closeCharModal() {
 }
 
 /**
+ * キャラクター設定をLocalStorageに保存
+ */
+function persistCharacters() {
+  localStorage.setItem('ymm_characters', JSON.stringify(state.characters));
+}
+
+/**
  * キャラクター設定を保存
  */
 function saveCharacter() {
@@ -143,6 +150,7 @@ function saveCharacter() {
 
   initCharSelector();
   closeCharModal();
+  persistCharacters();
 }
 
 /**
@@ -159,6 +167,7 @@ function deleteCharacter() {
 
   initCharSelector();
   closeCharModal();
+  persistCharacters();
 }
 
 // モーダルイベントバインディング
@@ -272,8 +281,14 @@ async function init() {
 
   // キャラクター設定読み込み
   try {
-    const response = await fetch('./characters.json');
-    state.characters = await response.json();
+    const cached = localStorage.getItem('ymm_characters');
+    if (cached) {
+      state.characters = JSON.parse(cached);
+    } else {
+      const response = await fetch('./characters.json');
+      state.characters = await response.json();
+    }
+    
     if (state.characters.length > 0) {
       state.selectedCharId = state.characters[0].id;
     }
