@@ -5,6 +5,7 @@ import { initLayers, renderSubtitles, setupTimelineEvents } from './timeline.js'
 import { setupExportEvents } from './export.js';
 import { countMoras } from './lib/mora-counter.js';
 import { setupJogWheel } from './jog-wheel.js';
+import { setupProjectEvents } from './project.js';
 
 // 入力関連のDOM要素
 const charSelector = document.getElementById('char-selector');
@@ -27,7 +28,7 @@ let editingCharId = null; // 編集中のキャラクターID (新規作成時�
 /**
  * 初期化: キャラクターセレクターの生成
  */
-function initCharSelector() {
+export function initCharSelector() {
   charSelector.innerHTML = '';
   state.characters.forEach(char => {
     const btn = document.createElement('button');
@@ -119,7 +120,7 @@ function closeCharModal() {
 /**
  * キャラクター設定をLocalStorageに保存
  */
-function persistCharacters() {
+export function persistCharacters() {
   localStorage.setItem('ymm_characters', JSON.stringify(state.characters));
 }
 
@@ -276,6 +277,7 @@ async function init() {
   setupVideoEvents();
   setupTimelineEvents();
   setupExportEvents();
+  setupProjectEvents();
   setupJogWheel();
   initLayers(); // レイヤーDOM初期化
 

@@ -64,6 +64,11 @@
         </div>
 
         <div class="export-section">
+          <button class="export-btn" style="background-color: var(--primary-color); color: white;" id="save-project">プロジェクト保存</button>
+          <label class="export-btn" style="background-color: var(--primary-color); color: white; display: inline-block; cursor: pointer;" for="load-project">
+            プロジェクト読込
+            <input type="file" id="load-project" accept=".json" hidden>
+          </label>
           <button class="export-btn" id="export-timeline">CSV: タイムライン設計</button>
           <button class="export-btn" id="export-script">CSV: 台本・音声合成用</button>
         </div>
