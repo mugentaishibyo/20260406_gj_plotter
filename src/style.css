@@ -540,9 +540,23 @@ body {
   border-radius: 4px;
   color: #aaa;
   cursor: pointer;
+  text-align: center;
+  display: inline-block;
+  box-sizing: border-box;
 }
 
 .export-btn:hover {
   border-color: #555;
   color: white;
+}
+
+.export-btn-primary {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.export-btn-primary:hover {
+  filter: brightness(1.2);
+  border-color: var(--primary-color);
 }
