@@ -6,6 +6,7 @@ import { setupExportEvents } from './export.js';
 import { countMoras } from './lib/mora-counter.js';
 import { setupJogWheel } from './jog-wheel.js';
 import { setupProjectEvents } from './project.js';
+import { initHistory, saveHistory, undo, redo } from './history.js';
 
 // 入力関連のDOM要素
 const charSelector = document.getElementById('char-selector');
@@ -24,6 +25,16 @@ const modalDeleteBtn = document.getElementById('modal-delete-btn');
 const modalSaveBtn = document.getElementById('modal-save-btn');
 
 let editingCharId = null; // 編集中のキャラクターID (新規作成時はnull)
+
+/**
+ * アプリ全体のUIを更新
+ */
+export function refreshApp() {
+  renderSubtitles();
+  initLayers();
+  initCharSelector();
+  updateSelectionUI();
+}
 
 /**
  * 初期化: キャラクターセレクターの生成
@@ -131,6 +142,7 @@ function saveCharacter() {
   const name = charNameInput.value.trim();
   if (!name) return alert('名前を入力してください');
 
+  saveHistory();
   const newChar = {
     id: editingCharId || `char-${Date.now()}`,
     name,
@@ -161,6 +173,7 @@ function deleteCharacter() {
   if (!editingCharId) return;
   if (!confirm('このキャラクターを削除しますか？')) return;
 
+  saveHistory();
   state.characters = state.characters.filter(c => c.id !== editingCharId);
   if (state.selectedCharId === editingCharId) {
     state.selectedCharId = state.characters[0]?.id || '';
@@ -227,6 +240,7 @@ function addOrEditSubtitle() {
   const speechRate = char.speechRate || 1.0;
   const duration = Math.max(0.2, moraLength / speechRate); // 最低0.2秒
 
+  saveHistory();
   if (state.selectedSubtitleId) {
     // 編集モード
     const index = state.subtitles.findIndex(s => s.id === state.selectedSubtitleId);
@@ -270,15 +284,55 @@ textInput.onkeydown = (e) => {
 };
 
 /**
+ * ジェスチャーイベント (マルチタッチタップ) のセットアップ
+ */
+function setupGestureEvents() {
+  let touchStartTime = 0;
+  let maxTouches = 0;
+
+  window.addEventListener('touchstart', (e) => {
+    // タッチが開始された際、現在の指の本数を記録
+    if (e.touches.length > maxTouches) {
+      maxTouches = e.touches.length;
+    }
+    
+    if (e.touches.length >= 2) {
+      touchStartTime = Date.now();
+    }
+  }, { passive: true });
+
+  window.addEventListener('touchend', (e) => {
+    const duration = Date.now() - touchStartTime;
+    
+    // 最後に指が離れたとき (touches.length === 0) に判定
+    if (e.touches.length === 0) {
+      if (duration < 300 && duration > 0) { // タップの閾値
+        if (maxTouches === 2) {
+          undo();
+        } else if (maxTouches === 3) {
+          redo();
+        }
+      }
+      maxTouches = 0; // 指の本数をリセット
+      touchStartTime = 0;
+    }
+  }, { passive: true });
+}
+
+/**
  * アプリのメイン初期化ルーチン
  */
 async function init() {
+  // 履歴管理の初期化
+  initHistory(refreshApp);
+
   // 各モジュールのイベントをセットアップ
   setupVideoEvents();
   setupTimelineEvents();
   setupExportEvents();
   setupProjectEvents();
   setupJogWheel();
+  setupGestureEvents();
   initLayers(); // レイヤーDOM初期化
 
   // キャラクター設定読み込み

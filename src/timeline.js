@@ -1,6 +1,7 @@
 import { CONFIG, state } from './config.js';
 import { advanceVideoTime, getCurrentDuration } from './video.js';
 import { updateSelectionUI } from './main.js';
+import { saveHistory } from './history.js';
 
 const timelineContainer = document.getElementById('timeline-container');
 const timelineContent = document.getElementById('timeline-content');
@@ -157,6 +158,7 @@ function setupDragAndDrop(div, sub) {
     isDragging = false;
     div.classList.remove('dragging');
 
+    saveHistory();
     const newLeft = parseFloat(div.style.left);
     let newTime = newLeft / state.pixelsPerSecond;
     if (newTime < 0) newTime = 0;
