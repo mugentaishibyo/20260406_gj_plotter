@@ -1,14 +1,16 @@
 {
-  "name": "20260406_ymm_plotter",
-  "version": "0.0.0",
+  "name": "gjvoiplotter-monorepo",
+  "version": "1.0.0",
   "private": true,
-  "type": "module",
+  "workspaces": [
+    "apps/*"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
-  },
-  "devDependencies": {
-    "vite": "^8.0.4"
+    "web:dev": "npm run dev -w @gjvoiplotter/web",
+    "web:build": "npm run build -w @gjvoiplotter/web",
+    "desktop:dev": "npm run tauri dev -w @gjvoiplotter/desktop",
+    "desktop:build": "npm run tauri build -w @gjvoiplotter/desktop",
+    "mobile:dev": "npm run dev -w @gjvoiplotter/mobile",
+    "mobile:build": "npm run build -w @gjvoiplotter/mobile"
   }
 }

@@ -1,0 +1,6 @@
+{
+  "appId": "com.gjvoiplotter.app",
+  "appName": "GJVoiplotter",
+  "webDir": "../../apps/web/dist",
+  "bundledWebRuntime": false
+}
