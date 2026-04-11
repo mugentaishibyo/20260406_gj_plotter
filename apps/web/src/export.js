@@ -1,4 +1,5 @@
 import { state } from './config.js';
+import { extractBaseText } from './lib/mora-counter.js';
 
 export function setupExportEvents() {
   const exportTimelineBtn = document.getElementById('export-timeline');
@@ -7,8 +8,8 @@ export function setupExportEvents() {
   exportTimelineBtn.onclick = () => {
     let csv = '開始時間(秒),レイヤー,キャラクター名,セリフ\n';
     state.subtitles.sort((a, b) => a.startTime - b.startTime).forEach(sub => {
-      // レイヤー情報も合わせて書き出すように拡張
-      csv += `${sub.startTime.toFixed(3)},${sub.layer},${sub.charName},"${sub.text.replace(/"/g, '""')}"\n`;
+      const cleanText = extractBaseText(sub.text).replace(/"/g, '""');
+      csv += `${sub.startTime.toFixed(3)},${sub.layer},${sub.charName},"${cleanText}"\n`;
     });
     downloadCSV(csv, 'ymm_timeline_design.csv');
   };
@@ -19,7 +20,8 @@ export function setupExportEvents() {
       .filter(sub => !sub.isPin) // ピンアイテムを除外
       .sort((a, b) => a.startTime - b.startTime)
       .forEach(sub => {
-        csv += `${sub.charName},"${sub.text.replace(/"/g, '""')}"\n`;
+        const cleanText = extractBaseText(sub.text).replace(/"/g, '""');
+        csv += `${sub.charName},"${cleanText}"\n`;
       });
     downloadCSV(csv, 'ymm_script.csv');
   };

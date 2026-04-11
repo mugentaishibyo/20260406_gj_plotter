@@ -1,11 +1,34 @@
 /**
  * 日本語テキストのモーラ数（拍数）を計算する簡易ユーティリティ
  */
+/**
+ * 青空文庫記法から「読み仮名（よみ）」を抽出する関数
+ */
+export function extractReading(text) {
+  if (!text) return '';
+  return text
+    .replace(/\|([^《]+)《([^》]+)》/g, "$2")
+    .replace(/([一-龠々]+)《([^》]+)》/g, "$2");
+}
+
+/**
+ * 青空文庫記法から「ベース文字（元の漢字など）」を抽出する関数
+ */
+export function extractBaseText(text) {
+  if (!text) return '';
+  return text
+    .replace(/\|([^《]+)《([^》]+)》/g, "$1")
+    .replace(/([一-龠々]+)《([^》]+)》/g, "$1");
+}
+
 export function countMoras(text) {
   if (!text) return 0;
 
+  // 青空文庫記法のルビを処理（読み仮名を抽出）してモーラ計算の対象とする
+  const processedText = extractReading(text);
+
   // カタカナをひらがなに変換（正規化）
-  let normalized = text.replace(/[\u30a1-\u30f6]/g, (match) => {
+  let normalized = processedText.replace(/[\u30a1-\u30f6]/g, (match) => {
     return String.fromCharCode(match.charCodeAt(0) - 0x60);
   });
 

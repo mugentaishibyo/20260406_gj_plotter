@@ -2,6 +2,7 @@ import { CONFIG, state } from './config.js';
 import { advanceVideoTime, getCurrentDuration } from './video.js';
 import { updateSelectionUI } from './main.js';
 import { saveHistory } from './history.js';
+import { extractBaseText } from './lib/mora-counter.js';
 
 const timelineContainer = document.getElementById('timeline-container');
 const timelineContent = document.getElementById('timeline-content');
@@ -76,7 +77,8 @@ export function renderSubtitles() {
     div.style.top = `${sub.layer * CONFIG.LAYER_HEIGHT}px`;
     div.style.height = `${CONFIG.LAYER_HEIGHT - 6}px`;
 
-    div.textContent = sub.isPin ? `📌 ${sub.text}` : `[${sub.charName}] ${sub.text}`;
+    const displayText = extractBaseText(sub.text);
+    div.textContent = sub.isPin ? `📌 ${displayText}` : `[${sub.charName}] ${displayText}`;
     div.dataset.id = sub.id;
 
     setupDragAndDrop(div, sub);

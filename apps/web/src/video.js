@@ -1,5 +1,6 @@
 import { state } from './config.js';
 import { updateTimeline, renderSubtitles } from './timeline.js';
+import { extractBaseText } from './lib/mora-counter.js';
 
 // DOM要素
 const videoPreview = document.getElementById('video-preview');
@@ -74,7 +75,7 @@ function updateSubtitleDisplay() {
   );
 
   if (currentSub) {
-    subtitleOverlay.textContent = currentSub.text;
+    subtitleOverlay.textContent = extractBaseText(currentSub.text);
     subtitleOverlay.style.color = currentSub.charColor;
     subtitleOverlay.style.display = 'block';
   } else {
