@@ -41,6 +41,19 @@ export function refreshApp() {
  */
 export function initCharSelector() {
   charSelector.innerHTML = '';
+
+  // ピンボタンの追加
+  const pinBtn = document.createElement('button');
+  pinBtn.className = `pin-btn ${state.selectedCharId === state.PIN_CHAR_ID ? 'active' : ''}`;
+  pinBtn.innerHTML = '📌';
+  pinBtn.title = 'ピンアイテム（出力から除外されるメモ・マーカー）';
+  pinBtn.onclick = () => {
+    state.selectedCharId = state.PIN_CHAR_ID;
+    document.querySelectorAll('.char-btn, .pin-btn').forEach(b => b.classList.remove('active'));
+    pinBtn.classList.add('active');
+  };
+  charSelector.appendChild(pinBtn);
+
   state.characters.forEach(char => {
     const btn = document.createElement('button');
     btn.className = `char-btn ${char.id === state.selectedCharId ? 'active' : ''}`;
@@ -79,7 +92,7 @@ export function initCharSelector() {
       if (isLongPress) return;
       
       state.selectedCharId = char.id;
-      document.querySelectorAll('.char-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.char-btn, .pin-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
     };
     charSelector.appendChild(btn);
@@ -234,11 +247,22 @@ function addOrEditSubtitle() {
   const text = textInput.value.trim();
   if (!text) return;
 
+  const isPin = state.selectedCharId === state.PIN_CHAR_ID;
   const char = state.characters.find(c => c.id === state.selectedCharId);
-  const moras = countMoras(text);
-  const moraLength = moras * (char.moraRate || 0.15);
-  const speechRate = char.speechRate || 1.0;
-  const duration = Math.max(0.2, moraLength / speechRate); // 最低0.2秒
+  
+  let duration = 0.5; // ピン用デフォルト長
+  let charName = '📌メモ';
+  let charColor = '#ffaa00';
+
+  if (!isPin) {
+    if (!char) return; // 未定義エラー回避
+    const moras = countMoras(text);
+    const moraLength = moras * (char.moraRate || 0.15);
+    const speechRate = char.speechRate || 1.0;
+    duration = Math.max(0.2, moraLength / speechRate); // 最低0.2秒
+    charName = char.name;
+    charColor = char.color;
+  }
 
   saveHistory();
   if (state.selectedSubtitleId) {
@@ -249,8 +273,9 @@ function addOrEditSubtitle() {
         ...state.subtitles[index],
         text,
         duration,
-        charName: char.name,
-        charColor: char.color,
+        charName,
+        charColor,
+        isPin,
         layer: state.selectedLayerIndex
       };
       // 編集後は選択解除
@@ -265,12 +290,15 @@ function addOrEditSubtitle() {
       startTime,
       duration,
       layer: state.selectedLayerIndex,
-      charName: char.name,
-      charColor: char.color,
+      charName,
+      charColor,
+      isPin,
       text
     };
     state.subtitles.push(subtitle);
-    advanceVideoTime(startTime + duration);
+    if (!isPin) {
+      advanceVideoTime(startTime + duration);
+    }
   }
 
   renderSubtitles();
