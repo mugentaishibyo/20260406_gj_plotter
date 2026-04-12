@@ -50,8 +50,16 @@ export function updateTimeline() {
   const pos = state.currentTime * state.pixelsPerSecond;
   playhead.style.left = `${pos}px`;
   
-  // モバイル向けの自動センタースクロール (再生時のみ、手動スクロール中は邪魔しないのが理想だが簡易実装)
-  // timelineContainer.scrollLeft = pos - timelineContainer.clientWidth / 4;
+  // 再生バー（playhead）の位置に合わせてコンテナを自動スクロールさせる
+  const containerWidth = timelineContainer.clientWidth;
+  const currentScroll = timelineContainer.scrollLeft;
+  const padding = containerWidth * 0.1; // 画面端から10%の余裕を持たせる
+  
+  if (pos < currentScroll + padding) {
+    timelineContainer.scrollLeft = pos - padding;
+  } else if (pos > currentScroll + containerWidth - padding) {
+    timelineContainer.scrollLeft = pos - containerWidth + padding;
+  }
 }
 
 /**

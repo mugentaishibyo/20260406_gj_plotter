@@ -264,8 +264,10 @@ body {
 
 .jog-wheel-container {
   height: 40px;
-  background: #1a1d23;
-  border-radius: 4px;
+  /* 円柱状の立体感を出すグラデーションとシャドウ */
+  background: linear-gradient(to right, #000 0%, #333 15%, #444 50%, #333 85%, #000 100%);
+  border-radius: 8px;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.8), inset 0 -2px 4px rgba(0,0,0,0.8), 0 1px 1px rgba(255,255,255,0.1);
   position: relative;
   overflow: hidden;
   cursor: ew-resize;
@@ -275,39 +277,25 @@ body {
 .jog-wheel-inner {
   position: absolute;
   top: 0;
-  left: 50%;
+  left: -500px; /* 左端まで線をびっしり埋めるためにオフセット */
   height: 100%;
   display: flex;
-  align-items: flex-end;
-  gap: 12px;
+  align-items: center; /* 中央に溝を配置 */
+  gap: 8px; /* 溝の間隔を詰める */
   pointer-events: none;
-  transition: transform 0.1s linear;
+  will-change: transform;
 }
 
 .jog-tick {
-  width: 1px;
-  background: #555;
-  height: 15px;
+  width: 2px;
+  background: #111;
+  height: 60%; /* 溝の深さ */
+  border-right: 1px solid #555; /* 立体感を強調するハイライト */
   flex-shrink: 0;
 }
 
-.jog-tick.major {
-  height: 25px;
-  background: #888;
-  position: relative;
-}
-
 .jog-wheel-marker {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  width: 2px;
-  height: 100%;
-  background: #ff4d4d;
-  transform: translateX(-50%);
-  box-shadow: 0 0 8px rgba(255, 77, 77, 0.5);
-  z-index: 5;
-  pointer-events: none;
+  display: none; /* マーカーラインは不要になったため非表示 */
 }
 
 /* Input Section */
