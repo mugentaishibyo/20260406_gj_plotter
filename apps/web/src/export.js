@@ -20,8 +20,8 @@ export function setupExportEvents() {
       .filter(sub => !sub.isPin) // ピンアイテムを除外
       .sort((a, b) => a.startTime - b.startTime)
       .forEach(sub => {
-        const cleanText = extractBaseText(sub.text).replace(/"/g, '""');
-        csv += `${sub.charName},"${cleanText}"\n`;
+        const escapedText = sub.text.replace(/"/g, '""');
+        csv += `${sub.charName},"${escapedText}"\n`;
       });
     downloadCSV(csv, 'ymm_script.csv');
   };
