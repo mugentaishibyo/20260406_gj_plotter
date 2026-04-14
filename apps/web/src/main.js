@@ -7,6 +7,7 @@ import { countMoras } from './lib/mora-counter.js';
 import { setupJogWheel } from './jog-wheel.js';
 import { setupProjectEvents } from './project.js';
 import { initHistory, saveHistory, undo, redo } from './history.js';
+import { loadCharacterSettings, saveCharacterSettings, importSettingsFromFile, exportSettingsToFile } from './lib/storage.js';
 
 // 入力関連のDOM要素
 const charSelector = document.getElementById('char-selector');
@@ -142,10 +143,10 @@ function closeCharModal() {
 }
 
 /**
- * キャラクター設定をLocalStorageに保存
+ * キャラクター設定を保存（環境に応じて切り替え）
  */
-export function persistCharacters() {
-  localStorage.setItem('ymm_characters', JSON.stringify(state.characters));
+export async function persistCharacters() {
+  await saveCharacterSettings(state.characters);
 }
 
 /**
@@ -365,12 +366,19 @@ async function init() {
 
   // キャラクター設定読み込み
   try {
-    const cached = localStorage.getItem('ymm_characters');
-    if (cached) {
-      state.characters = JSON.parse(cached);
+    const loadedCharacters = await loadCharacterSettings();
+    if (loadedCharacters) {
+      state.characters = loadedCharacters;
     } else {
-      const response = await fetch('./characters.json');
-      state.characters = await response.json();
+      // 初期データがない場合は characters.json から読み込み試行
+      try {
+        const response = await fetch('./characters.json');
+        if (response.ok) {
+          state.characters = await response.json();
+        }
+      } catch (e) {
+        console.warn('初期設定ファイルの読み込みスキップ:', e);
+      }
     }
     
     if (state.characters.length > 0) {
@@ -378,7 +386,44 @@ async function init() {
     }
     initCharSelector();
   } catch (error) {
-    console.error('キャラクター設定の読み込みに失敗しました:', error);
+    console.error('キャラクター設定の初期化に失敗しました:', error);
+  }
+
+  // 設定インポート/エクスポートのイベント紐付け
+  setupSettingsUI();
+}
+
+/**
+ * キャラクター設定のインポート/エクスポートUI制御
+ */
+function setupSettingsUI() {
+  const importInput = document.getElementById('import-settings-file');
+  const exportBtn = document.getElementById('export-settings-btn');
+
+  if (importInput) {
+    importInput.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      try {
+        const data = await importSettingsFromFile(file);
+        if (confirm('キャラクター設定を上書きインポートしますか？')) {
+          saveHistory();
+          state.characters = data;
+          await persistCharacters();
+          initCharSelector();
+          alert('インポートが完了しました');
+        }
+      } catch (err) {
+        alert('エラー: ' + err.message);
+      }
+      importInput.value = ''; // リセット
+    };
+  }
+
+  if (exportBtn) {
+    exportBtn.onclick = () => {
+      exportSettingsToFile(state.characters);
+    };
   }
 }
 
