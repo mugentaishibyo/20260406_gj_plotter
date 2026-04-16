@@ -21,6 +21,7 @@ const charNameInput = document.getElementById('char-name');
 const charColorInput = document.getElementById('char-color');
 const charMoraRateInput = document.getElementById('char-mora-rate');
 const charSpeechRateInput = document.getElementById('char-speech-rate');
+const charOutputGroupInput = document.getElementById('char-output-group');
 const modalCancelBtn = document.getElementById('modal-cancel-btn');
 const modalDeleteBtn = document.getElementById('modal-delete-btn');
 const modalSaveBtn = document.getElementById('modal-save-btn');
@@ -115,12 +116,23 @@ function openCharModal(charId = null) {
   editingCharId = charId;
   const char = state.characters.find(c => c.id === charId);
 
+  // 既存の全キャラクターから出力グループを取得してコンボボックスの選択肢を生成
+  const outputGroupList = document.getElementById('output-group-list');
+  const existingGroups = [...new Set(state.characters.map(c => c.outputGroup).filter(g => !!g))];
+  outputGroupList.innerHTML = '';
+  existingGroups.forEach(group => {
+    const option = document.createElement('option');
+    option.value = group;
+    outputGroupList.appendChild(option);
+  });
+
   if (char) {
     modalTitle.textContent = 'キャラクター設定の編集';
     charNameInput.value = char.name;
     charColorInput.value = char.color;
     charMoraRateInput.value = char.moraRate || 0.15;
     charSpeechRateInput.value = char.speechRate || 1.0;
+    charOutputGroupInput.value = char.outputGroup || '';
     modalDeleteBtn.style.display = 'block';
   } else {
     modalTitle.textContent = '新規キャラクター追加';
@@ -128,6 +140,7 @@ function openCharModal(charId = null) {
     charColorInput.value = '#646cff';
     charMoraRateInput.value = 0.15;
     charSpeechRateInput.value = 1.0;
+    charOutputGroupInput.value = '';
     modalDeleteBtn.style.display = 'none';
   }
 
@@ -162,7 +175,8 @@ function saveCharacter() {
     name,
     color: charColorInput.value,
     moraRate: parseFloat(charMoraRateInput.value),
-    speechRate: parseFloat(charSpeechRateInput.value)
+    speechRate: parseFloat(charSpeechRateInput.value),
+    outputGroup: charOutputGroupInput.value.trim()
   };
 
   if (editingCharId) {

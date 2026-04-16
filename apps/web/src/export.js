@@ -2,28 +2,44 @@ import { state } from './config.js';
 import { extractBaseText } from './lib/mora-counter.js';
 
 export function setupExportEvents() {
-  const exportTimelineBtn = document.getElementById('export-timeline');
-  const exportScriptBtn = document.getElementById('export-script');
+  const exportAllBtn = document.getElementById('export-all-csv');
+  if (!exportAllBtn) return;
 
-  exportTimelineBtn.onclick = () => {
-    let csv = '開始時間(秒),レイヤー,キャラクター名,セリフ\n';
-    state.subtitles.sort((a, b) => a.startTime - b.startTime).forEach(sub => {
+  exportAllBtn.onclick = () => {
+    // 1. タイムライン設計CSVの生成
+    let timelineCsv = '開始時間(秒),レイヤー,キャラクター名,セリフ\n';
+    const sortedSubs = [...state.subtitles].sort((a, b) => a.startTime - b.startTime);
+    
+    sortedSubs.forEach(sub => {
       const cleanText = extractBaseText(sub.text).replace(/"/g, '""');
-      csv += `${sub.startTime.toFixed(3)},${sub.layer},${sub.charName},"${cleanText}"\n`;
+      timelineCsv += `${sub.startTime.toFixed(3)},${sub.layer},${sub.charName},"${cleanText}"\n`;
     });
-    downloadCSV(csv, 'ymm_timeline_design.csv');
-  };
 
-  exportScriptBtn.onclick = () => {
-    let csv = 'キャラクター名,セリフ\n';
-    state.subtitles
-      .filter(sub => !sub.isPin) // ピンアイテムを除外
-      .sort((a, b) => a.startTime - b.startTime)
-      .forEach(sub => {
-        const escapedText = sub.text.replace(/"/g, '""');
-        csv += `${sub.charName},"${escapedText}"\n`;
-      });
-    downloadCSV(csv, 'ymm_script.csv');
+    // 2. 台本CSVのグループ化生成
+    const scriptSubs = sortedSubs.filter(sub => !sub.isPin);
+    const groups = {};
+
+    scriptSubs.forEach(sub => {
+      const char = state.characters.find(c => c.name === sub.charName);
+      const groupName = char?.outputGroup || '';
+      if (!groups[groupName]) {
+        groups[groupName] = 'キャラクター名,セリフ\n';
+      }
+      const escapedText = sub.text.replace(/"/g, '""');
+      groups[groupName] += `${sub.charName},"${escapedText}"\n`;
+    });
+
+    // 順次ダウンロード実行
+    // タイムライン設計を最初に
+    downloadCSV(timelineCsv, 'ymm_timeline_design.csv');
+
+    // グループごとの台本をダウンロード（少し時間をずらす）
+    Object.keys(groups).forEach((groupName, index) => {
+      const filename = groupName ? `ymm_script_${groupName}.csv` : 'ymm_script.csv';
+      setTimeout(() => {
+        downloadCSV(groups[groupName], filename);
+      }, (index + 1) * 300);
+    });
   };
 }
 

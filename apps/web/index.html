@@ -80,8 +80,7 @@
         </div>
 
         <div class="export-section">
-          <button class="export-btn" id="export-timeline">CSV: タイムライン設計</button>
-          <button class="export-btn" id="export-script">CSV: 台本・音声合成用</button>
+          <button class="export-btn export-btn-primary" id="export-all-csv">CSVエクスポート (台本+タイミング)</button>
         </div>
       </section>
     </div>
@@ -106,6 +105,11 @@
           <div class="input-group">
             <label>話速倍率</label>
             <input type="number" id="char-speech-rate" step="0.1" value="1.0">
+          </div>
+          <div class="input-group">
+            <label>出力グループ</label>
+            <input type="text" id="char-output-group" list="output-group-list" placeholder="例: Aパート (空欄可)">
+            <datalist id="output-group-list"></datalist>
           </div>
         </div>
         <div class="modal-footer">
