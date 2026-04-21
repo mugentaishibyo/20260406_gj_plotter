@@ -259,13 +259,20 @@ export function updateSelectionUI() {
  * 字幕アイテムの追加または編集
  */
 function addOrEditSubtitle() {
-  const text = textInput.value.trim();
-  if (!text) return;
-
+  let text = textInput.value.trim();
   const isPin = state.selectedCharId === state.PIN_CHAR_ID;
+
+  // ピンアイテム以外でテキストが空の場合は何もしない
+  if (!isPin && !text) return;
+  
+  // ピンアイテムでテキストが空の場合はデフォルト値を設定
+  if (isPin && !text) {
+    text = '目印';
+  }
+
   const char = state.characters.find(c => c.id === state.selectedCharId);
   
-  let duration = 0.5; // ピン用デフォルト長
+  let duration = 10 / CONFIG.FRAME_RATE; // ピン用デフォルト長 (10フレーム)
   let charName = '📌メモ';
   let charColor = '#ffaa00';
 
@@ -300,11 +307,33 @@ function addOrEditSubtitle() {
   } else {
     // 新規追加モード
     const startTime = state.currentTime;
+    const endTime = startTime + duration;
+    
+    // アイテムが重ならない一番上のレイヤーを探す
+    let targetLayer = 0;
+    while (targetLayer < CONFIG.LAYER_COUNT) {
+      const hasOverlap = state.subtitles.some(sub => {
+        if (sub.layer !== targetLayer) return false;
+        const subEndTime = sub.startTime + sub.duration;
+        return (startTime < subEndTime && endTime > sub.startTime);
+      });
+      
+      if (!hasOverlap) {
+        break;
+      }
+      targetLayer++;
+    }
+    
+    // 用意されているレイヤー数を超えた場合は一番下のレイヤーに配置する
+    if (targetLayer >= CONFIG.LAYER_COUNT) {
+      targetLayer = CONFIG.LAYER_COUNT - 1;
+    }
+
     const subtitle = {
       id: Date.now(),
       startTime,
       duration,
-      layer: state.selectedLayerIndex,
+      layer: targetLayer,
       charName,
       charColor,
       isPin,
