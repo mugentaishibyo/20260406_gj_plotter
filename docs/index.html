@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>YMM Plotter</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <script type="module" crossorigin src="/20260406_gj_plotter/assets/index-BLz1f6D-.js"></script>
+    <link rel="stylesheet" crossorigin href="/20260406_gj_plotter/assets/index-DU0T2ylZ.css">
+  </head>
+  <body>
+    <div id="app">
+      <!-- Video Preview -->
+      <section class="video-container" id="video-ui">
+        <video id="video-preview" playsinline></video>
+        <!-- 字幕表示用オーバーレイ -->
+        <div id="subtitle-overlay" class="subtitle-overlay"></div>
+        <!-- 再生/一時停止などのコントロール -->
+        <div class="controls-overlay" id="controls-overlay">
+          <button id="play-pause-btn" class="play-pause-btn">▶</button>
+        </div>
+        <div class="video-overlay" id="video-overlay">
+          <label for="video-file" class="file-input-label">参照動画を選択</label>
+          <input type="file" id="video-file" accept="video/*" hidden>
+        </div>
+      </section>
+
+      <!-- Timeline -->
+      <section class="timeline-section">
+        <div class="timeline-header">
+          <span id="current-time-display">00:00:00.000</span>
+        </div>
+        <div class="timeline-container" id="timeline-container">
+          <div class="timeline-content" id="timeline-content">
+            <!-- 縦のグリッド線 -->
+            <div class="timeline-layer-grid"></div>
+            <!-- 再生ヘッド -->
+            <div class="timeline-playhead" id="playhead"></div>
+            <!-- レイヤーとサブタイトルはJSで動的に生成される -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Jog Wheel (Frame Adjustment) -->
+      <section class="jog-wheel-section">
+        <div class="jog-wheel-container" id="jog-wheel-container">
+          <div class="jog-wheel-inner" id="jog-wheel-inner">
+            <!-- JSで目盛りを生成 -->
+          </div>
+          <div class="jog-wheel-marker"></div>
+        </div>
+      </section>
+
+      <!-- Input and Controls -->
+      <section class="input-section">
+        <div class="char-selector" id="char-selector">
+          <!-- Character buttons will be injected here -->
+        </div>
+
+        <div class="input-row">
+          <input type="text" id="text-input" placeholder="セリフを入力..." autocomplete="off">
+          <button id="add-btn">追加</button>
+        </div>
+
+        <div class="export-section">
+          <button class="export-btn export-btn-primary" id="save-project">プロジェクト保存</button>
+          <label class="export-btn export-btn-primary" for="load-project">
+            プロジェクト読込
+            <input type="file" id="load-project" accept=".json" hidden>
+          </label>
+        </div>
+
+        <div class="export-section">
+          <button class="export-btn" id="export-settings-btn">設定エクスポート</button>
+          <label class="export-btn" for="import-settings-file">
+            設定インポート
+            <input type="file" id="import-settings-file" accept=".json" hidden>
+          </label>
+        </div>
+
+        <div class="export-section">
+          <button class="export-btn export-btn-primary" id="export-all-csv">CSVエクスポート</button>
+        </div>
+      </section>
+    </div>
+
+    <!-- Character Editor Modal -->
+    <div id="char-modal" class="modal">
+      <div class="modal-content">
+        <h3 id="modal-title">キャラクター設定</h3>
+        <div class="modal-body">
+          <div class="input-group">
+            <label>名前</label>
+            <input type="text" id="char-name" placeholder="例: ずんだもん">
+          </div>
+          <div class="input-group">
+            <label>カラー</label>
+            <input type="color" id="char-color" value="#646cff">
+          </div>
+          <div class="input-group">
+            <label>1モーラあたりの長さ (秒)</label>
+            <input type="number" id="char-mora-rate" step="0.01" value="0.15">
+          </div>
+          <div class="input-group">
+            <label>話速倍率</label>
+            <input type="number" id="char-speech-rate" step="0.1" value="1.0">
+          </div>
+          <div class="input-group">
+            <label>出力グループ</label>
+            <input type="text" id="char-output-group" list="output-group-list" placeholder="例: Aパート (空欄可)">
+            <datalist id="output-group-list"></datalist>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="modal-cancel-btn" class="secondary-btn">キャンセル</button>
+          <button id="modal-delete-btn" class="danger-btn" style="display: none;">削除</button>
+          <button id="modal-save-btn" class="primary-btn">保存</button>
+        </div>
+      </div>
+    </div>
+
+  </body>
+</html>
