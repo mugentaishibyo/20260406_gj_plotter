@@ -1,5 +1,5 @@
 [
-  { "id": "aivoice", "name": "AIVoice女声", "color": "#ff4d4d", "moraRate": 0.15, "speechRate": 1.0 },
-  { "id": "cevio", "name": "Cevio女声", "color": "#4da6ff", "moraRate": 0.15, "speechRate": 1.0 },
-  { "id": "voicevox", "name": "ボイスボックス女声", "color": "#4dff88", "moraRate": 0.15, "speechRate": 1.0 }
+  { "id": "fast", "name": "早口", "color": "#ff4d4d", "moraRate": 0.13, "speechRate": 1.0 },
+  { "id": "std", "name": "普通", "color": "#4da6ff", "moraRate": 0.147, "speechRate": 1.0 },
+  { "id": "slowly", "name": "ゆっくり", "color": "#4dff88", "moraRate": 0.155, "speechRate": 1.0 }
 ]
