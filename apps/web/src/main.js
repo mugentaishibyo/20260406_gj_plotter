@@ -130,7 +130,7 @@ function openCharModal(charId = null) {
     modalTitle.textContent = 'キャラクター設定の編集';
     charNameInput.value = char.name;
     charColorInput.value = char.color;
-    charMoraRateInput.value = char.moraRate || 0.15;
+    charMoraRateInput.value = char.moraRate || 150;
     charSpeechRateInput.value = char.speechRate || 1.0;
     charOutputGroupInput.value = char.outputGroup || '';
     modalDeleteBtn.style.display = 'block';
@@ -138,7 +138,7 @@ function openCharModal(charId = null) {
     modalTitle.textContent = '新規キャラクター追加';
     charNameInput.value = '';
     charColorInput.value = '#646cff';
-    charMoraRateInput.value = 0.15;
+    charMoraRateInput.value = 150;
     charSpeechRateInput.value = 1.0;
     charOutputGroupInput.value = '';
     modalDeleteBtn.style.display = 'none';
@@ -279,7 +279,7 @@ function addOrEditSubtitle() {
   if (!isPin) {
     if (!char) return; // 未定義エラー回避
     const moras = countMoras(text);
-    const moraLength = moras * (char.moraRate || 0.15);
+    const moraLength = moras * ((char.moraRate || 150) / 1000);
     const speechRate = char.speechRate || 1.0;
     duration = Math.max(0.2, moraLength / speechRate); // 最低0.2秒
     charName = char.name;
@@ -423,6 +423,13 @@ async function init() {
         console.warn('初期設定ファイルの読み込みスキップ:', e);
       }
     }
+
+    // 互換性処理: moraRate が小さい値（5.0未満）の場合は秒単位とみなしてミリ秒に変換
+    state.characters.forEach(char => {
+      if (char.moraRate !== undefined && char.moraRate < 5.0) {
+        char.moraRate = Math.round(char.moraRate * 1000);
+      }
+    });
     
     if (state.characters.length > 0) {
       state.selectedCharId = state.characters[0].id;
