@@ -42,11 +42,6 @@ export function initLayers() {
  * タイムラインの再生ヘッドとスクロール位置を更新
  */
 export function updateTimeline() {
-  const duration = getCurrentDuration();
-  if (duration > 0) {
-    timelineContent.style.width = `${duration * state.pixelsPerSecond + 1000}px`;
-  }
-
   const pos = state.currentTime * state.pixelsPerSecond;
   playhead.style.left = `${pos}px`;
   
@@ -59,6 +54,16 @@ export function updateTimeline() {
     timelineContainer.scrollLeft = pos - padding;
   } else if (pos > currentScroll + containerWidth - padding) {
     timelineContainer.scrollLeft = pos - containerWidth + padding;
+  }
+}
+
+/**
+ * タイムラインのコンテンツ幅を動画の長さに合わせて初期化
+ */
+export function initTimelineWidth() {
+  const duration = getCurrentDuration();
+  if (duration > 0) {
+    timelineContent.style.width = `${duration * state.pixelsPerSecond + 1000}px`;
   }
 }
 

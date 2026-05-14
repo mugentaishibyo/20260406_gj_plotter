@@ -1,13 +1,20 @@
 import { isTauri } from './env.js';
 
-// Tauri API のダイナミックインポート（Web環境でのエラー防止）
-let tauriFs, tauriPath;
-if (isTauri()) {
-  try {
-    tauriFs = await import('@tauri-apps/plugin-fs');
-    tauriPath = await import('@tauri-apps/api/path');
-  } catch (e) {
-    console.error('Tauri API の読み込みに失敗しました:', e);
+// Tauri API のダイナミックインポート用変数
+let tauriFs = null;
+let tauriPath = null;
+
+/**
+ * Tauriプラグインを必要に応じてロードする
+ */
+async function ensureTauri() {
+  if (isTauri() && !tauriFs) {
+    try {
+      tauriFs = await import('@tauri-apps/plugin-fs');
+      tauriPath = await import('@tauri-apps/api/path');
+    } catch (e) {
+      console.error('Tauri API の読み込みに失敗しました:', e);
+    }
   }
 }
 
@@ -19,6 +26,7 @@ const SETTINGS_FILENAME = 'character_settings.json';
  * @returns {Promise<Array|null>}
  */
 export async function loadCharacterSettings() {
+  await ensureTauri();
   if (isTauri() && tauriFs && tauriPath) {
     try {
       const configDir = await tauriPath.appConfigDir();
@@ -52,6 +60,7 @@ export async function loadCharacterSettings() {
  */
 export async function saveCharacterSettings(data) {
   if (!data) return;
+  await ensureTauri();
 
   // 常にLocalStorageにも保存（冗長性のため）
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));

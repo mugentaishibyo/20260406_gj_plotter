@@ -1,5 +1,5 @@
 import { state } from './config.js';
-import { updateTimeline, renderSubtitles } from './timeline.js';
+import { updateTimeline, renderSubtitles, initTimelineWidth } from './timeline.js';
 import { extractBaseText } from './lib/mora-counter.js';
 
 // DOM要素
@@ -25,8 +25,7 @@ export function setupVideoEvents() {
       state.isVideoLoaded = true;
       
       videoPreview.onloadedmetadata = () => {
-        // メタデータロード時に必要な処理があればここに追加
-        // （長さによるタイムラインの初期化などは timeline.js で実施）
+        initTimelineWidth();
       };
     }
   });
@@ -102,6 +101,11 @@ export function getCurrentDuration() {
   return videoPreview.duration || 0;
 }
 
+let isSeeking = false;
+/**
+ * 指定した時間に動画を移動させ、UIを更新する
+ * @param {number} time - 目標時間（秒）
+ */
 export function advanceVideoTime(time) {
   if (time < 0) time = 0;
   
@@ -110,10 +114,22 @@ export function advanceVideoTime(time) {
     if (videoPreview.duration && time > videoPreview.duration) {
       time = videoPreview.duration;
     }
-    videoPreview.currentTime = time;
+    
+    // UI用の状態を即座に更新して、赤い再生バーなどはヌルヌル動かす
+    state.currentTime = time;
+    updateTimeUI();
+
+    // 動画自体のシークはブラウザの描画タイミングに合わせる（重要：描画をブロックしない）
+    if (!isSeeking) {
+      isSeeking = true;
+      requestAnimationFrame(() => {
+        videoPreview.currentTime = state.currentTime;
+        isSeeking = false;
+      });
+    }
+  } else {
+    // 動画がない場合もUIだけは更新
+    state.currentTime = time;
+    updateTimeUI();
   }
-  
-  // 常にstateの時間を更新してUIに即時反映させる（動画非読み込み時も動作させるため）
-  state.currentTime = time;
-  updateTimeUI();
 }
