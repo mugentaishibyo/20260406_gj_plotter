@@ -8,6 +8,7 @@ const videoFile = document.getElementById('video-file');
 const videoOverlay = document.getElementById('video-overlay');
 const currentTimeDisplay = document.getElementById('current-time-display');
 const subtitleOverlay = document.getElementById('subtitle-overlay');
+const pinOverlay = document.getElementById('pin-overlay');
 const playPauseBtn = document.getElementById('play-pause-btn');
 const controlsOverlay = document.getElementById('controls-overlay');
 
@@ -69,6 +70,7 @@ export function updateTimeUI() {
  */
 function updateSubtitleDisplay() {
   const currentSub = state.subtitles.find(sub => 
+    !sub.isPin &&
     state.currentTime >= sub.startTime && 
     state.currentTime <= sub.startTime + sub.duration
   );
@@ -79,6 +81,20 @@ function updateSubtitleDisplay() {
     subtitleOverlay.style.display = 'block';
   } else {
     subtitleOverlay.style.display = 'none';
+  }
+
+  const currentPin = state.subtitles.find(sub => 
+    sub.isPin &&
+    state.currentTime >= sub.startTime && 
+    state.currentTime <= sub.startTime + sub.duration
+  );
+
+  if (currentPin) {
+    pinOverlay.textContent = extractBaseText(currentPin.text);
+    pinOverlay.style.color = currentPin.charColor || '#ffaa00';
+    pinOverlay.style.display = 'block';
+  } else {
+    pinOverlay.style.display = 'none';
   }
 }
 

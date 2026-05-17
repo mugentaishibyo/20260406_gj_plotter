@@ -79,6 +79,24 @@ body {
   white-space: pre-wrap;
 }
 
+/* Pin Overlay Style */
+.pin-overlay {
+  position: absolute;
+  top: 5%;
+  left: 5%;
+  max-width: 80%;
+  text-align: left;
+  pointer-events: none;
+  z-index: 5;
+  font-weight: bold;
+  font-size: clamp(12px, 4vw, 20px);
+  color: #ffaa00;
+  text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 0 2px 0 #000, 0 -2px 0 #000, 2px 0 0 #000, -2px 0 0 #000;
+  padding: 0 10px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+}
+
 /* Playback Controls Overlay */
 .controls-overlay {
   position: absolute;

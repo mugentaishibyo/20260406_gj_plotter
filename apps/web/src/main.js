@@ -1,6 +1,6 @@
 import './style.css';
 import { state, CONFIG } from './config.js';
-import { setupVideoEvents, advanceVideoTime } from './video.js';
+import { setupVideoEvents, advanceVideoTime, updateTimeUI } from './video.js';
 import { initLayers, renderSubtitles, setupTimelineEvents } from './timeline.js';
 import { setupExportEvents } from './export.js';
 import { countMoras } from './lib/mora-counter.js';
@@ -342,6 +342,8 @@ function addOrEditSubtitle() {
     state.subtitles.push(subtitle);
     if (!isPin) {
       advanceVideoTime(startTime + duration);
+    } else {
+      updateTimeUI();
     }
   }
 
