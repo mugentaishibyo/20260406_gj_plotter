@@ -5,7 +5,7 @@ import { initLayers, renderSubtitles, setupTimelineEvents } from './timeline.js'
 import { setupExportEvents } from './export.js';
 import { countMoras } from './lib/mora-counter.js';
 import { setupJogWheel } from './jog-wheel.js';
-import { setupProjectEvents } from './project.js';
+import { setupProjectEvents, loadAutoSavedProject } from './project.js';
 import { initHistory, saveHistory, undo, redo } from './history.js';
 import { loadCharacterSettings, saveCharacterSettings, importSettingsFromFile, exportSettingsToFile } from './lib/storage.js';
 
@@ -409,36 +409,59 @@ async function init() {
   setupGestureEvents();
   initLayers(); // レイヤーDOM初期化
 
-  // キャラクター設定読み込み
+  let loadedFromAutoSave = false;
+  // 自動保存の読み込み
   try {
-    const loadedCharacters = await loadCharacterSettings();
-    if (loadedCharacters) {
-      state.characters = loadedCharacters;
-    } else {
-      // 初期データがない場合は characters.json から読み込み試行
-      try {
-        const response = await fetch('./characters.json');
-        if (response.ok) {
-          state.characters = await response.json();
+    const autoSaved = await loadAutoSavedProject();
+    if (autoSaved && autoSaved.characters && autoSaved.subtitles) {
+      if (confirm('前回のプロジェクトデータが見つかりました。復元しますか？')) {
+        state.characters = autoSaved.characters;
+        state.subtitles = autoSaved.subtitles;
+        if (state.characters.length > 0) {
+          state.selectedCharId = state.characters[0].id;
         }
-      } catch (e) {
-        console.warn('初期設定ファイルの読み込みスキップ:', e);
+        initCharSelector();
+        renderSubtitles();
+        updateSelectionUI();
+        loadedFromAutoSave = true;
       }
     }
+  } catch (err) {
+    console.warn('自動保存データの読み込みに失敗:', err);
+  }
 
-    // 互換性処理: moraRate が小さい値（5.0未満）の場合は秒単位とみなしてミリ秒に変換
-    state.characters.forEach(char => {
-      if (char.moraRate !== undefined && char.moraRate < 5.0) {
-        char.moraRate = Math.round(char.moraRate * 1000);
+  if (!loadedFromAutoSave) {
+    // キャラクター設定読み込み
+    try {
+      const loadedCharacters = await loadCharacterSettings();
+      if (loadedCharacters) {
+        state.characters = loadedCharacters;
+      } else {
+        // 初期データがない場合は characters.json から読み込み試行
+        try {
+          const response = await fetch('./characters.json');
+          if (response.ok) {
+            state.characters = await response.json();
+          }
+        } catch (e) {
+          console.warn('初期設定ファイルの読み込みスキップ:', e);
+        }
       }
-    });
-    
-    if (state.characters.length > 0) {
-      state.selectedCharId = state.characters[0].id;
+
+      // 互換性処理: moraRate が小さい値（5.0未満）の場合は秒単位とみなしてミリ秒に変換
+      state.characters.forEach(char => {
+        if (char.moraRate !== undefined && char.moraRate < 5.0) {
+          char.moraRate = Math.round(char.moraRate * 1000);
+        }
+      });
+      
+      if (state.characters.length > 0) {
+        state.selectedCharId = state.characters[0].id;
+      }
+      initCharSelector();
+    } catch (error) {
+      console.error('キャラクター設定の初期化に失敗しました:', error);
     }
-    initCharSelector();
-  } catch (error) {
-    console.error('キャラクター設定の初期化に失敗しました:', error);
   }
 
   // 設定インポート/エクスポートのイベント紐付け
