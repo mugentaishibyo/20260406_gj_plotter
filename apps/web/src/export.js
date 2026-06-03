@@ -31,11 +31,11 @@ export function setupExportEvents() {
 
     // 順次ダウンロード実行
     // タイムライン設計を最初に
-    downloadCSV(timelineCsv, 'ymm_timeline_design.csv');
+    downloadCSV(timelineCsv, 'gj_timeline_design.csv');
 
     // グループごとの台本をダウンロード（少し時間をずらす）
     Object.keys(groups).forEach((groupName, index) => {
-      const filename = groupName ? `ymm_script_${groupName}.csv` : 'ymm_script.csv';
+      const filename = groupName ? `gj_script_${groupName}.csv` : 'gj_script.csv';
       setTimeout(() => {
         downloadCSV(groups[groupName], filename);
       }, (index + 1) * 300);

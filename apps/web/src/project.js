@@ -18,7 +18,7 @@ async function ensureTauri() {
   }
 }
 
-const AUTOSAVE_KEY = 'ymm_autosave_project';
+const AUTOSAVE_KEY = 'gj_autosave_project';
 const AUTOSAVE_FILENAME = 'autosave_project.json';
 let lastSavedJson = '';
 

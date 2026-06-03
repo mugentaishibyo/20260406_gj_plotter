@@ -18,7 +18,7 @@ async function ensureTauri() {
   }
 }
 
-const STORAGE_KEY = 'ymm_characters';
+const STORAGE_KEY = 'gj_characters';
 const SETTINGS_FILENAME = 'character_settings.json';
 
 /**
