@@ -4,7 +4,7 @@ import { resolve } from 'path';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [],
-  base: '/20260406_gj_plotter/',
+  base: './',
   root: resolve(__dirname),
   build: {
     outDir: '../../docs',
