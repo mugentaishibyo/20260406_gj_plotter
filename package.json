@@ -1,16 +1,16 @@
 {
-  "name": "gjvoiplotter-monorepo",
+  "name": "gj-voiplotter-monorepo",
   "version": "1.0.0",
   "private": true,
   "workspaces": [
     "apps/*"
   ],
   "scripts": {
-    "web:dev": "npm run dev -w @gjvoiplotter/web",
-    "web:build": "npm run build -w @gjvoiplotter/web",
-    "desktop:dev": "npm run tauri dev -w @gjvoiplotter/desktop",
-    "desktop:build": "npm run tauri build -w @gjvoiplotter/desktop",
-    "mobile:dev": "npm run dev -w @gjvoiplotter/mobile",
-    "mobile:build": "npm run build -w @gjvoiplotter/mobile"
+    "web:dev": "npm run dev -w @gj-voiplotter/web",
+    "web:build": "npm run build -w @gj-voiplotter/web",
+    "desktop:dev": "npm run tauri dev -w @gj-voiplotter/desktop",
+    "desktop:build": "npm run tauri build -w @gj-voiplotter/desktop",
+    "mobile:dev": "npm run dev -w @gj-voiplotter/mobile",
+    "mobile:build": "npm run build -w @gj-voiplotter/mobile"
   }
 }

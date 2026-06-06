@@ -1,6 +1,6 @@
 {
-  "name": "@gjvoiplotter/mobile",
-  "version": "1.0.0",
+  "name": "@gj-voiplotter/mobile",
+  "version": "0.0.0",
   "private": true,
   "scripts": {
     "cap:sync": "cap sync",

@@ -1,12 +1,12 @@
 [package]
-name = "gjvoiplotter"
+name = "gj-voiplotter"
 version = "0.1.0"
 description = "A Tauri App"
 authors = ["you"]
 edition = "2021"
 
 [lib]
-name = "gjvoiplotter_lib"
+name = "gj_voiplotter_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]

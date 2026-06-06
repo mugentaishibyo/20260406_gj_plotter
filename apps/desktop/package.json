@@ -1,6 +1,6 @@
 {
-  "name": "@gjvoiplotter/desktop",
-  "version": "1.0.0",
+  "name": "@gj-voiplotter/desktop",
+  "version": "0.0.0",
   "private": true,
   "scripts": {
     "tauri": "tauri"

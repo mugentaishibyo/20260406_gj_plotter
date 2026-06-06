@@ -1,7 +1,7 @@
 {
-  "productName": "GJVoiplotter",
-  "version": "1.0.0",
-  "identifier": "com.gjvoiplotter.app",
+  "productName": "GJ-Voiplotter",
+  "version": "0.1.0",
+  "identifier": "com.gj-voiplotter.app",
   "build": {
     "beforeDevCommand": "npm run web:dev",
     "beforeBuildCommand": "npm run web:build",
@@ -11,8 +11,8 @@
   "app": {
     "windows": [
       {
-        "title": "GJVoiplotter",
-        "width": 1280,
+        "title": "GJ-Voiplotter",
+        "width": 800,
         "height": 720
       }
     ],

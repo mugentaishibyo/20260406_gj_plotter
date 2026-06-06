@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "gjvoiplotter",
+  "name": "20260406-gj-voiplotter",
   "compatibility_date": "2024-06-06",
   "pages_build_output_dir": "./docs",
   "build": {

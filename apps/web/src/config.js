@@ -2,7 +2,7 @@
  * アプリケーション設定（定数）
  */
 export const CONFIG = {
-  APP_NAME: 'GJVoiplotter',
+  APP_NAME: 'GJ-Voiplotter',
   VERSION: 'a.00',
   LAYER_COUNT: 5,           // タイムラインのレイヤー階層数
   LAYER_HEIGHT: 44,         // 1レイヤーあたりの高さ(px)
