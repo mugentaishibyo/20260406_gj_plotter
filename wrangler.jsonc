@@ -2,9 +2,5 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "gj-voiplotter",
   "compatibility_date": "2024-06-06",
-  "pages_build_output_dir": "./docs",
-  "build": {
-    "command": "npm run web:build",
-    "cwd": "./"
-  }
+  "pages_build_output_dir": "./docs"
 }
