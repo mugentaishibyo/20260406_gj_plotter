@@ -70,7 +70,7 @@ export function initCharSelector() {
     const startPress = (e) => {
       // 右クリックや修飾キー付きクリックは除外
       if (e.type === 'mousedown' && e.button !== 0) return;
-      
+
       isLongPress = false;
       pressTimer = setTimeout(() => {
         isLongPress = true;
@@ -92,7 +92,7 @@ export function initCharSelector() {
     btn.onclick = (e) => {
       // ロングタップ後はクリックイベントを発火させない
       if (isLongPress) return;
-      
+
       state.selectedCharId = char.id;
       document.querySelectorAll('.char-btn, .pin-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
@@ -228,7 +228,7 @@ export function updateSelectionUI() {
   if (selectedSub) {
     textInput.value = selectedSub.text;
     addBtn.textContent = '編集';
-    
+
     // キャラクターの選択状態も同期
     if (selectedSub.isPin) {
       state.selectedCharId = state.PIN_CHAR_ID;
@@ -264,14 +264,14 @@ function addOrEditSubtitle() {
 
   // ピンアイテム以外でテキストが空の場合は何もしない
   if (!isPin && !text) return;
-  
+
   // ピンアイテムでテキストが空の場合はデフォルト値を設定
   if (isPin && !text) {
     text = '目印';
   }
 
   const char = state.characters.find(c => c.id === state.selectedCharId);
-  
+
   let duration = 10 / CONFIG.FRAME_RATE; // ピン用デフォルト長 (10フレーム)
   let charName = '📌メモ';
   let charColor = '#ffaa00';
@@ -308,7 +308,7 @@ function addOrEditSubtitle() {
     // 新規追加モード
     const startTime = state.currentTime;
     const endTime = startTime + duration;
-    
+
     // アイテムが重ならない一番上のレイヤーを探す
     let targetLayer = 0;
     while (targetLayer < CONFIG.LAYER_COUNT) {
@@ -317,13 +317,13 @@ function addOrEditSubtitle() {
         const subEndTime = sub.startTime + sub.duration;
         return (startTime < subEndTime && endTime > sub.startTime);
       });
-      
+
       if (!hasOverlap) {
         break;
       }
       targetLayer++;
     }
-    
+
     // 用意されているレイヤー数を超えた場合は一番下のレイヤーに配置する
     if (targetLayer >= CONFIG.LAYER_COUNT) {
       targetLayer = CONFIG.LAYER_COUNT - 1;
@@ -369,7 +369,7 @@ function setupGestureEvents() {
     if (e.touches.length > maxTouches) {
       maxTouches = e.touches.length;
     }
-    
+
     if (e.touches.length >= 2) {
       touchStartTime = Date.now();
     }
@@ -377,7 +377,7 @@ function setupGestureEvents() {
 
   window.addEventListener('touchend', (e) => {
     const duration = Date.now() - touchStartTime;
-    
+
     // 最後に指が離れたとき (touches.length === 0) に判定
     if (e.touches.length === 0) {
       if (duration < 300 && duration > 0) { // タップの閾値
@@ -410,25 +410,27 @@ async function init() {
   initLayers(); // レイヤーDOM初期化
 
   let loadedFromAutoSave = false;
-  // 自動保存の読み込み
-  try {
-    const autoSaved = await loadAutoSavedProject();
-    if (autoSaved && autoSaved.characters && autoSaved.subtitles) {
-      if (confirm('前回のプロジェクトデータが見つかりました。復元しますか？')) {
-        state.characters = autoSaved.characters;
-        state.subtitles = autoSaved.subtitles;
-        if (state.characters.length > 0) {
-          state.selectedCharId = state.characters[0].id;
-        }
-        initCharSelector();
-        renderSubtitles();
-        updateSelectionUI();
-        loadedFromAutoSave = true;
-      }
-    }
-  } catch (err) {
-    console.warn('自動保存データの読み込みに失敗:', err);
-  }
+  // 自動保存の読み込み（開発環境では自動読み込みをスキップする）
+  // if (!import.meta.env.DEV) {
+  //   try {
+  //     const autoSaved = await loadAutoSavedProject();
+  //     if (autoSaved && autoSaved.characters && autoSaved.subtitles) {
+  //       if (confirm('前回のプロジェクトデータが見つかりました。復元しますか？')) {
+  //         state.characters = autoSaved.characters;
+  //         state.subtitles = autoSaved.subtitles;
+  //         if (state.characters.length > 0) {
+  //           state.selectedCharId = state.characters[0].id;
+  //         }
+  //         initCharSelector();
+  //         renderSubtitles();
+  //         updateSelectionUI();
+  //         loadedFromAutoSave = true;
+  //       }
+  //     }
+  //   } catch (err) {
+  //     console.warn('自動保存データの読み込みに失敗:', err);
+  //   }
+  // }
 
   if (!loadedFromAutoSave) {
     // キャラクター設定読み込み
@@ -454,7 +456,7 @@ async function init() {
           char.moraRate = Math.round(char.moraRate * 1000);
         }
       });
-      
+
       if (state.characters.length > 0) {
         state.selectedCharId = state.characters[0].id;
       }
