@@ -11,6 +11,13 @@ export const CONFIG = {
 };
 
 /**
+ * 出力グループ設定
+ */
+export const OUTPUT_GROUPS = [
+  'V2', 'AI', 'AI2', 'CCS', 'CAI', 'VP', 'VV', 'CI', 'G'
+];
+
+/**
  * 状態管理
  */
 export const state = {

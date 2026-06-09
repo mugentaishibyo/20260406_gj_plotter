@@ -1,5 +1,5 @@
 import './style.css';
-import { state, CONFIG } from './config.js';
+import { state, CONFIG, OUTPUT_GROUPS } from './config.js';
 import { setupVideoEvents, advanceVideoTime, updateTimeUI } from './video.js';
 import { initLayers, renderSubtitles, setupTimelineEvents } from './timeline.js';
 import { setupExportEvents } from './export.js';
@@ -22,6 +22,14 @@ const charColorInput = document.getElementById('char-color');
 const charMoraRateInput = document.getElementById('char-mora-rate');
 const charSpeechRateInput = document.getElementById('char-speech-rate');
 const charOutputGroupInput = document.getElementById('char-output-group');
+
+// 出力グループのコンボボックス初期化
+OUTPUT_GROUPS.forEach(group => {
+  const option = document.createElement('option');
+  option.value = group;
+  option.textContent = group;
+  charOutputGroupInput.appendChild(option);
+});
 const modalCancelBtn = document.getElementById('modal-cancel-btn');
 const modalDeleteBtn = document.getElementById('modal-delete-btn');
 const modalSaveBtn = document.getElementById('modal-save-btn');
@@ -116,15 +124,7 @@ function openCharModal(charId = null) {
   editingCharId = charId;
   const char = state.characters.find(c => c.id === charId);
 
-  // 既存の全キャラクターから出力グループを取得してコンボボックスの選択肢を生成
-  const outputGroupList = document.getElementById('output-group-list');
-  const existingGroups = [...new Set(state.characters.map(c => c.outputGroup).filter(g => !!g))];
-  outputGroupList.innerHTML = '';
-  existingGroups.forEach(group => {
-    const option = document.createElement('option');
-    option.value = group;
-    outputGroupList.appendChild(option);
-  });
+
 
   if (char) {
     modalTitle.textContent = 'キャラクター設定の編集';
