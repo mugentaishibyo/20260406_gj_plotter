@@ -111,15 +111,35 @@
           </div>
           <div class="input-group">
             <label>出力グループ</label>
-            <select id="char-output-group">
-              <option value="">(なし)</option>
-            </select>
+            <div style="display: flex; gap: 8px;">
+              <select id="char-output-group" style="flex-grow: 1;">
+                <option value="">(なし)</option>
+              </select>
+              <button id="edit-groups-btn" class="secondary-btn" style="padding: 0 10px;" title="グループ編集">✏️</button>
+            </div>
           </div>
         </div>
         <div class="modal-footer">
           <button id="modal-cancel-btn" class="secondary-btn">キャンセル</button>
           <button id="modal-delete-btn" class="danger-btn" style="display: none;">削除</button>
           <button id="modal-save-btn" class="primary-btn">保存</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Group Editor Modal -->
+    <div id="group-modal" class="modal">
+      <div class="modal-content">
+        <h3>出力グループ設定</h3>
+        <div class="modal-body" id="group-list-container" style="max-height: 300px; overflow-y: auto;">
+          <!-- Groups will be injected here -->
+        </div>
+        <div style="display: flex; justify-content: center; margin-top: 8px;">
+          <button id="add-group-btn" class="secondary-btn" style="width: 100%;">+</button>
+        </div>
+        <div class="modal-footer">
+          <button id="group-modal-cancel-btn" class="secondary-btn">キャンセル</button>
+          <button id="group-modal-save-btn" class="primary-btn">保存</button>
         </div>
       </div>
     </div>

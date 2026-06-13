@@ -11,9 +11,9 @@ export const CONFIG = {
 };
 
 /**
- * 出力グループ設定
+ * 出力グループのデフォルト設定
  */
-export const OUTPUT_GROUPS = [
+export const DEFAULT_OUTPUT_GROUPS = [
   'V2', 'AI', 'AI2', 'CCS', 'CAI', 'VP', 'VV', 'CI', 'G'
 ];
 
@@ -22,6 +22,7 @@ export const OUTPUT_GROUPS = [
  */
 export const state = {
   characters: [],
+  outputGroups: [...DEFAULT_OUTPUT_GROUPS],
   selectedCharId: '',
   PIN_CHAR_ID: 'pin-item', // ピンアイテム用の特別なID
   selectedLayerIndex: 0, // 現在選択されているレイヤー

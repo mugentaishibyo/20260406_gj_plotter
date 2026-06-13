@@ -1,5 +1,5 @@
 import './style.css';
-import { state, CONFIG, OUTPUT_GROUPS } from './config.js';
+import { state, CONFIG } from './config.js';
 import { setupVideoEvents, advanceVideoTime, updateTimeUI } from './video.js';
 import { initLayers, renderSubtitles, setupTimelineEvents } from './timeline.js';
 import { setupExportEvents } from './export.js';
@@ -7,7 +7,7 @@ import { countMoras } from './lib/mora-counter.js';
 import { setupJogWheel } from './jog-wheel.js';
 import { setupProjectEvents, loadAutoSavedProject } from './project.js';
 import { initHistory, saveHistory, undo, redo } from './history.js';
-import { loadCharacterSettings, saveCharacterSettings, importSettingsFromFile, exportSettingsToFile } from './lib/storage.js';
+import { loadCharacterSettings, saveCharacterSettings, importSettingsFromFile, exportSettingsToFile, loadOutputGroups, saveOutputGroups } from './lib/storage.js';
 
 // 入力関連のDOM要素
 const charSelector = document.getElementById('char-selector');
@@ -24,12 +24,16 @@ const charSpeechRateInput = document.getElementById('char-speech-rate');
 const charOutputGroupInput = document.getElementById('char-output-group');
 
 // 出力グループのコンボボックス初期化
-OUTPUT_GROUPS.forEach(group => {
-  const option = document.createElement('option');
-  option.value = group;
-  option.textContent = group;
-  charOutputGroupInput.appendChild(option);
-});
+export function renderOutputGroupsSelect() {
+  charOutputGroupInput.innerHTML = '<option value="">(なし)</option>';
+  state.outputGroups.forEach(group => {
+    const option = document.createElement('option');
+    option.value = group;
+    option.textContent = group;
+    charOutputGroupInput.appendChild(option);
+  });
+}
+renderOutputGroupsSelect();
 const modalCancelBtn = document.getElementById('modal-cancel-btn');
 const modalDeleteBtn = document.getElementById('modal-delete-btn');
 const modalSaveBtn = document.getElementById('modal-save-btn');
@@ -219,6 +223,101 @@ modalDeleteBtn.onclick = deleteCharacter;
 charModal.onclick = (e) => {
   if (e.target === charModal) closeCharModal();
 };
+
+// --- グループ編集モーダル ---
+const editGroupsBtn = document.getElementById('edit-groups-btn');
+const groupModal = document.getElementById('group-modal');
+const groupListContainer = document.getElementById('group-list-container');
+const addGroupBtn = document.getElementById('add-group-btn');
+const groupModalCancelBtn = document.getElementById('group-modal-cancel-btn');
+const groupModalSaveBtn = document.getElementById('group-modal-save-btn');
+
+let editingGroups = [];
+
+function renderGroupModalList() {
+  groupListContainer.innerHTML = '';
+  editingGroups.forEach((group, index) => {
+    const row = document.createElement('div');
+    row.style.display = 'flex';
+    row.style.gap = '8px';
+    row.style.marginBottom = '8px';
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = group;
+    input.style.flexGrow = '1';
+    input.readOnly = true;
+    input.className = 'group-input';
+    // input.styleに適用するとモーダル内の共通CSSが優先されるためインラインで
+    input.style.backgroundColor = 'var(--bg-input)';
+    input.style.color = 'white';
+    input.style.border = '1px solid var(--border-color)';
+    input.style.borderRadius = '6px';
+    input.style.padding = '10px';
+
+    const editBtn = document.createElement('button');
+    editBtn.className = 'secondary-btn edit-group-btn';
+    editBtn.textContent = '✏️';
+    editBtn.onclick = () => {
+      input.readOnly = false;
+      input.focus();
+    };
+
+    input.onblur = () => {
+      input.readOnly = true;
+      editingGroups[index] = input.value.trim();
+    };
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'danger-btn delete-group-btn';
+    deleteBtn.textContent = '🗑️';
+    deleteBtn.onclick = () => {
+      editingGroups.splice(index, 1);
+      renderGroupModalList();
+    };
+
+    row.appendChild(input);
+    row.appendChild(editBtn);
+    row.appendChild(deleteBtn);
+    groupListContainer.appendChild(row);
+  });
+}
+
+editGroupsBtn.onclick = () => {
+  editingGroups = [...state.outputGroups];
+  renderGroupModalList();
+  groupModal.classList.add('active');
+};
+
+groupModalCancelBtn.onclick = () => {
+  groupModal.classList.remove('active');
+};
+
+addGroupBtn.onclick = () => {
+  editingGroups.push('New Group');
+  renderGroupModalList();
+};
+
+groupModalSaveBtn.onclick = async () => {
+  const finalGroups = editingGroups.map(g => g.trim()).filter(g => g);
+  state.outputGroups = finalGroups;
+  await saveOutputGroups(state.outputGroups);
+  
+  const currentVal = charOutputGroupInput.value;
+  renderOutputGroupsSelect();
+  if (state.outputGroups.includes(currentVal)) {
+    charOutputGroupInput.value = currentVal;
+  } else {
+    charOutputGroupInput.value = '';
+  }
+
+  groupModal.classList.remove('active');
+};
+
+groupModal.onclick = (e) => {
+  if (e.target === groupModal) groupModal.classList.remove('active');
+};
+
 
 /**
  * 選択状態のUI更新
@@ -433,6 +532,16 @@ async function init() {
   // }
 
   if (!loadedFromAutoSave) {
+    try {
+      const loadedGroups = await loadOutputGroups();
+      if (loadedGroups) {
+        state.outputGroups = loadedGroups;
+        renderOutputGroupsSelect();
+      }
+    } catch (e) {
+      console.error('出力グループ設定の初期化に失敗しました:', e);
+    }
+
     // キャラクター設定読み込み
     try {
       const loadedCharacters = await loadCharacterSettings();

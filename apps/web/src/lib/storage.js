@@ -21,6 +21,9 @@ async function ensureTauri() {
 const STORAGE_KEY = 'gj_characters';
 const SETTINGS_FILENAME = 'character_settings.json';
 
+const STORAGE_KEY_GROUPS = 'gj_output_groups';
+const SETTINGS_FILENAME_GROUPS = 'output_groups.json';
+
 /**
  * キャラクター設定の読み込み
  * @returns {Promise<Array|null>}
@@ -80,6 +83,64 @@ export async function saveCharacterSettings(data) {
       console.log('Tauri環境での保存完了:', filePath);
     } catch (e) {
       console.error('Tauriでの設定保存に失敗:', e);
+    }
+  }
+}
+
+/**
+ * 出力グループ設定の読み込み
+ * @returns {Promise<Array|null>}
+ */
+export async function loadOutputGroups() {
+  await ensureTauri();
+  if (isTauri() && tauriFs && tauriPath) {
+    try {
+      const configDir = await tauriPath.appConfigDir();
+      const filePath = await tauriPath.join(configDir, SETTINGS_FILENAME_GROUPS);
+      
+      const fileExists = await tauriFs.exists(filePath);
+      if (fileExists) {
+        const content = await tauriFs.readTextFile(filePath);
+        return JSON.parse(content);
+      }
+    } catch (e) {
+      console.error('Tauriでのグループ設定読み込みに失敗:', e);
+    }
+  }
+
+  const cached = localStorage.getItem(STORAGE_KEY_GROUPS);
+  if (cached) {
+    try {
+      return JSON.parse(cached);
+    } catch (e) {
+      console.error('LocalStorageのグループパースに失敗:', e);
+    }
+  }
+  return null;
+}
+
+/**
+ * 出力グループ設定の保存
+ * @param {Array} data 
+ */
+export async function saveOutputGroups(data) {
+  if (!data) return;
+  await ensureTauri();
+
+  localStorage.setItem(STORAGE_KEY_GROUPS, JSON.stringify(data));
+
+  if (isTauri() && tauriFs && tauriPath) {
+    try {
+      const configDir = await tauriPath.appConfigDir();
+      const dirExists = await tauriFs.exists(configDir);
+      if (!dirExists) {
+        await tauriFs.mkdir(configDir, { recursive: true });
+      }
+
+      const filePath = await tauriPath.join(configDir, SETTINGS_FILENAME_GROUPS);
+      await tauriFs.writeTextFile(filePath, JSON.stringify(data, null, 2));
+    } catch (e) {
+      console.error('Tauriでのグループ設定保存に失敗:', e);
     }
   }
 }
