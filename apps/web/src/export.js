@@ -1,11 +1,12 @@
 import { state } from './config.js';
 import { extractBaseText } from './lib/mora-counter.js';
+import JSZip from 'jszip';
 
 export function setupExportEvents() {
   const exportAllBtn = document.getElementById('export-all-csv');
   if (!exportAllBtn) return;
 
-  exportAllBtn.onclick = () => {
+  exportAllBtn.onclick = async () => {
     // 1. タイムライン設計CSVの生成
     let timelineCsv = '開始時間(秒),レイヤー,キャラクター名,セリフ\n';
     const sortedSubs = [...state.subtitles].sort((a, b) => a.startTime - b.startTime);
@@ -29,27 +30,41 @@ export function setupExportEvents() {
       groups[groupName] += `${sub.charName},"${escapedText}"\n`;
     });
 
-    // 順次ダウンロード実行
-    // タイムライン設計を最初に
-    downloadCSV(timelineCsv, 'gj_timeline_design.csv');
+    // 3. ZIPの作成
+    const zip = new JSZip();
+    const bom = new Uint8Array([0xEF, 0xBB, 0xBF]); // UTF-8 with BOM for Excel
 
-    // グループごとの台本をダウンロード（少し時間をずらす）
-    Object.keys(groups).forEach((groupName, index) => {
+    const addCsvToZip = (filename, content) => {
+      const blob = new Blob([bom, content], { type: 'text/csv;charset=utf-8;' });
+      zip.file(filename, blob);
+    };
+
+    // タイムライン設計を追加
+    addCsvToZip('gj_timeline_design.csv', timelineCsv);
+
+    // グループごとの台本を追加
+    Object.keys(groups).forEach((groupName) => {
       const filename = groupName ? `gj_script_${groupName}.csv` : 'gj_script.csv';
-      setTimeout(() => {
-        downloadCSV(groups[groupName], filename);
-      }, (index + 1) * 300);
+      addCsvToZip(filename, groups[groupName]);
     });
-  };
-}
 
-function downloadCSV(csvContent, filename) {
-  const bom = new Uint8Array([0xEF, 0xBB, 0xBF]); // UTF-8 with BOM for Excel
-  const blob = new Blob([bom, csvContent], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.setAttribute('download', filename);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+    // ZIPの生成とダウンロード実行
+    const zipBlob = await zip.generateAsync({ type: 'blob' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(zipBlob);
+    
+    // ダウンロードするZIPファイル名に日時をつける (例: gj_export_20260613_120000.zip)
+    const now = new Date();
+    const dateStr = now.getFullYear().toString() + 
+                    String(now.getMonth() + 1).padStart(2, '0') + 
+                    String(now.getDate()).padStart(2, '0') + '_' + 
+                    String(now.getHours()).padStart(2, '0') + 
+                    String(now.getMinutes()).padStart(2, '0') + 
+                    String(now.getSeconds()).padStart(2, '0');
+    
+    link.setAttribute('download', `gj_export_${dateStr}.zip`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 }
