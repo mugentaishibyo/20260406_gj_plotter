@@ -29,8 +29,9 @@ export function setupJogWheel() {
   const applyFrameStep = (deltaPixels) => {
     const frameStep = Math.round(deltaPixels / pixelsPerFrame);
     if (frameStep !== 0) {
+      // 左へスライド（負の移動量）で進み、右へスライドで戻る。
       // 1フレーム = 1 / FRAME_RATE 秒
-      const timeStep = frameStep / CONFIG.FRAME_RATE;
+      const timeStep = -frameStep / CONFIG.FRAME_RATE;
       advanceVideoTime(state.currentTime + timeStep);
       return frameStep * pixelsPerFrame; // 消費した仮想ピクセル
     }

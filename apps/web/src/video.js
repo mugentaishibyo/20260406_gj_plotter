@@ -12,6 +12,75 @@ const pinOverlay = document.getElementById('pin-overlay');
 const playPauseBtn = document.getElementById('play-pause-btn');
 const controlsOverlay = document.getElementById('controls-overlay');
 
+// Safariを含む各ブラウザのデコーダーに同時シークを重ねないよう、
+// 動画要素へは常に最新の要求だけを順番に渡す。
+let pendingSeekTime = null;
+let seekInFlight = false;
+let nextSeekScheduled = false;
+
+function pumpPendingSeek() {
+  if (
+    seekInFlight ||
+    pendingSeekTime === null ||
+    videoPreview.readyState === HTMLMediaElement.HAVE_NOTHING
+  ) {
+    return;
+  }
+
+  const targetTime = pendingSeekTime;
+  pendingSeekTime = null;
+
+  // 同じ位置への代入では seeked が発火しない実装もあるため、ここで完了扱いにする。
+  if (Math.abs(videoPreview.currentTime - targetTime) < 0.0001) {
+    requestAnimationFrame(pumpPendingSeek);
+    return;
+  }
+
+  seekInFlight = true;
+
+  try {
+    videoPreview.currentTime = targetTime;
+  } catch (error) {
+    seekInFlight = false;
+    console.warn('動画をシークできませんでした。', error);
+    requestAnimationFrame(pumpPendingSeek);
+  }
+}
+
+function requestVideoSeek(time) {
+  pendingSeekTime = time;
+  pumpPendingSeek();
+}
+
+function scheduleNextSeekAfterPaint() {
+  if (pendingSeekTime === null || nextSeekScheduled) return;
+
+  nextSeekScheduled = true;
+  let continued = false;
+
+  const continueSeek = () => {
+    if (continued) return;
+    continued = true;
+    nextSeekScheduled = false;
+    pumpPendingSeek();
+  };
+
+  // 実際の映像フレームがコンポジターへ渡った時点を優先する。
+  // 停止中などで通知されない場合も、2描画フレーム後には処理を継続する。
+  if (typeof videoPreview.requestVideoFrameCallback === 'function') {
+    videoPreview.requestVideoFrameCallback(continueSeek);
+    requestAnimationFrame(() => requestAnimationFrame(continueSeek));
+  } else {
+    requestAnimationFrame(continueSeek);
+  }
+}
+
+function resetSeekQueue() {
+  pendingSeekTime = null;
+  seekInFlight = false;
+  nextSeekScheduled = false;
+}
+
 /**
  * 動画ファイルの読み込み
  */
@@ -21,6 +90,7 @@ export function setupVideoEvents() {
     if (file) {
       const url = URL.createObjectURL(file);
       videoPreview.src = url;
+      videoPreview.load();
       videoOverlay.style.display = 'none';
       controlsOverlay.style.display = 'flex'; // 再生ボタンを表示
       state.isVideoLoaded = true;
@@ -40,6 +110,14 @@ export function setupVideoEvents() {
       updateTimeUI();
     }
   });
+
+  videoPreview.addEventListener('seeked', () => {
+    seekInFlight = false;
+    scheduleNextSeekAfterPaint();
+  });
+
+  videoPreview.addEventListener('emptied', resetSeekQueue);
+  videoPreview.addEventListener('error', resetSeekQueue);
 
   playPauseBtn.onclick = togglePlay;
   videoPreview.onclick = togglePlay;
@@ -117,7 +195,6 @@ export function getCurrentDuration() {
   return videoPreview.duration || 0;
 }
 
-let isSeeking = false;
 /**
  * 指定した時間に動画を移動させ、UIを更新する
  * @param {number} time - 目標時間（秒）
@@ -135,14 +212,8 @@ export function advanceVideoTime(time) {
     state.currentTime = time;
     updateTimeUI();
 
-    // 動画自体のシークはブラウザの描画タイミングに合わせる（重要：描画をブロックしない）
-    if (!isSeeking) {
-      isSeeking = true;
-      requestAnimationFrame(() => {
-        videoPreview.currentTime = state.currentTime;
-        isSeeking = false;
-      });
-    }
+    // 動画自体はシーク完了を待ってから次の最新位置へ進める。
+    requestVideoSeek(state.currentTime);
   } else {
     // 動画がない場合もUIだけは更新
     state.currentTime = time;
