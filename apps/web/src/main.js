@@ -15,6 +15,30 @@ const textInput = document.getElementById('text-input');
 const addBtn = document.getElementById('add-btn');
 const rubyBtn = document.getElementById('ruby-btn');
 const deleteObjectBtn = document.getElementById('delete-object-btn');
+const deselectObjectBtn = document.getElementById('deselect-object-btn');
+const projectMenu = document.getElementById('project-menu');
+
+// メニュー内の操作後・外側のタップ・Escapeで閉じる。
+projectMenu.querySelectorAll('button, label').forEach(control => {
+  control.addEventListener('click', () => { projectMenu.open = false; });
+  if (control.tagName === 'LABEL') {
+    control.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        control.click();
+      }
+    });
+  }
+});
+document.addEventListener('pointerdown', e => {
+  if (!projectMenu.contains(e.target)) projectMenu.open = false;
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && projectMenu.open) {
+    projectMenu.open = false;
+    projectMenu.querySelector('summary').focus();
+  }
+});
 
 // モーダル関連のDOM要素
 const charModal = document.getElementById('char-modal');
@@ -332,6 +356,8 @@ groupModal.onclick = (e) => {
 export function updateSelectionUI() {
   const selectedSub = state.subtitles.find(s => s.id === state.selectedSubtitleId);
   deleteObjectBtn.disabled = !selectedSub;
+  deselectObjectBtn.disabled = !selectedSub;
+  deselectObjectBtn.title = selectedSub ? '選択を解除して新規追加に戻る' : 'オブジェクトを選択すると解除できます';
   deleteObjectBtn.title = selectedSub ? '選択したオブジェクトを削除' : 'オブジェクトを選択すると削除できます';
   if (selectedSub) {
     textInput.value = selectedSub.text;
@@ -457,6 +483,12 @@ function addOrEditSubtitle() {
 }
 
 // 選択した字幕・ピンだけを削除し、既存の履歴操作で戻せるようにする。
+deselectObjectBtn.onclick = () => {
+  state.selectedSubtitleId = null;
+  renderSubtitles();
+  updateSelectionUI();
+};
+
 deleteObjectBtn.onclick = () => {
   const index = state.subtitles.findIndex(sub => sub.id === state.selectedSubtitleId);
   if (index === -1) return;
@@ -485,7 +517,10 @@ rubyBtn.onclick = () => {
 };
 addBtn.onclick = addOrEditSubtitle;
 textInput.onkeydown = (e) => {
-  if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) addOrEditSubtitle();
+  if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && e.keyCode !== 229) {
+    e.preventDefault();
+    addOrEditSubtitle();
+  }
 };
 
 /**

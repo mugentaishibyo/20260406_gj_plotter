@@ -11,6 +11,23 @@
   </head>
   <body>
     <div id="app">
+      <header class="app-header">
+        <span class="app-title">GJ Plotter</span>
+        <details id="project-menu" class="project-menu">
+          <summary aria-label="プロジェクトメニュー" title="プロジェクトメニュー">⋮</summary>
+          <div class="project-menu-panel">
+            <button type="button" id="save-project">プロジェクト保存</button>
+            <label for="load-project" tabindex="0">プロジェクト読込</label>
+            <input type="file" id="load-project" accept=".json" hidden>
+            <hr>
+            <button type="button" id="export-settings-btn">設定エクスポート</button>
+            <label for="import-settings-file" tabindex="0">設定インポート</label>
+            <input type="file" id="import-settings-file" accept=".json" hidden>
+            <hr>
+            <button type="button" id="clear-project" class="danger-btn">プロジェクトをクリア</button>
+          </div>
+        </details>
+      </header>
       <!-- Video Preview -->
       <section class="video-container" id="video-ui">
         <video id="video-preview" playsinline preload="auto"></video>
@@ -32,7 +49,6 @@
       <section class="timeline-section">
         <div class="timeline-header">
           <span id="current-time-display">00:00:00.000</span>
-          <button type="button" id="delete-object-btn" disabled title="オブジェクトを選択すると削除できます">削除</button>
         </div>
         <div class="timeline-container" id="timeline-container">
           <div class="timeline-content" id="timeline-content">
@@ -62,26 +78,16 @@
         </div>
 
         <div class="input-row">
-          <input type="text" id="text-input" placeholder="セリフを入力..." autocomplete="off">
+          <textarea id="text-input" rows="2" placeholder="セリフを入力..." autocomplete="off" aria-label="セリフ" title="Enterで追加・編集、Shift＋Enterで改行"></textarea>
+        </div>
+        <div class="input-actions">
           <button type="button" id="ruby-btn" class="secondary-btn" title="選択した文字にルビを設定">ルビ</button>
           <button id="add-btn">追加</button>
         </div>
 
-        <div class="export-section">
-          <button class="export-btn export-btn-primary" id="save-project">プロジェクト保存</button>
-          <label class="export-btn export-btn-primary" for="load-project">
-            プロジェクト読込
-            <input type="file" id="load-project" accept=".json" hidden>
-          </label>
-          <button class="export-btn danger-btn" id="clear-project">プロジェクトのクリア</button>
-        </div>
-
-        <div class="export-section">
-          <button class="export-btn" id="export-settings-btn">設定エクスポート</button>
-          <label class="export-btn" for="import-settings-file">
-            設定インポート
-            <input type="file" id="import-settings-file" accept=".json" hidden>
-          </label>
+        <div class="object-actions">
+          <button type="button" id="deselect-object-btn" disabled title="オブジェクトを選択すると解除できます">選択解除</button>
+          <button type="button" id="delete-object-btn" disabled title="オブジェクトを選択すると削除できます">削除</button>
         </div>
 
         <div class="export-section">
