@@ -158,7 +158,9 @@ function setupDragAndDrop(div, sub) {
     div.removeEventListener('pointermove', onPointerMove);
     div.removeEventListener('pointerup', onPointerUp);
     div.removeEventListener('pointercancel', onPointerCancel);
-    div.releasePointerCapture(e.pointerId);
+    if (div.hasPointerCapture(e.pointerId)) {
+      div.releasePointerCapture(e.pointerId);
+    }
 
     if (!isDragging) {
       // 移動していなければクリック（選択）として扱う
@@ -199,6 +201,10 @@ function setupDragAndDrop(div, sub) {
   const onPointerUp = (e) => finalizeDrag(e);
   const onPointerCancel = (e) => finalizeDrag(e);
 
+  // 長押し時の選択メニュー・ネイティブのドラッグをアイテム内だけ抑止する。
+  div.addEventListener('contextmenu', (e) => e.preventDefault());
+  div.addEventListener('selectstart', (e) => e.preventDefault());
+  div.addEventListener('dragstart', (e) => e.preventDefault());
   div.addEventListener('pointerdown', onPointerDown);
 }
 

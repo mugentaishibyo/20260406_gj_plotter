@@ -4,20 +4,23 @@
     "name": "早口",
     "color": "#ff4d4d",
     "moraRate": 130,
-    "speechRate": 1.0
+    "speechRate": 1.0,
+    "postSpeechDelay": 800
   },
   {
     "id": "std",
     "name": "普通",
     "color": "#4da6ff",
     "moraRate": 147,
-    "speechRate": 1.0
+    "speechRate": 1.0,
+    "postSpeechDelay": 800
   },
   {
     "id": "slowly",
     "name": "ゆっくり",
     "color": "#4dff88",
     "moraRate": 155,
-    "speechRate": 1.0
+    "speechRate": 1.0,
+    "postSpeechDelay": 800
   }
 ]

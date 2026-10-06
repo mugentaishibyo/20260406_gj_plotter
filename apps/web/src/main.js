@@ -3,7 +3,7 @@ import { state, CONFIG } from './config.js';
 import { setupVideoEvents, advanceVideoTime, updateTimeUI } from './video.js';
 import { initLayers, renderSubtitles, setupTimelineEvents } from './timeline.js';
 import { setupExportEvents } from './export.js';
-import { countMoras } from './lib/mora-counter.js';
+import { calculateSubtitleDuration, getPostSpeechDelay, DEFAULT_POST_SPEECH_DELAY } from './lib/subtitle-duration.js';
 import { setupJogWheel } from './jog-wheel.js';
 import { setupProjectEvents, loadAutoSavedProject } from './project.js';
 import { initHistory, saveHistory, undo, redo } from './history.js';
@@ -13,6 +13,8 @@ import { loadCharacterSettings, saveCharacterSettings, importSettingsFromFile, e
 const charSelector = document.getElementById('char-selector');
 const textInput = document.getElementById('text-input');
 const addBtn = document.getElementById('add-btn');
+const rubyBtn = document.getElementById('ruby-btn');
+const deleteObjectBtn = document.getElementById('delete-object-btn');
 
 // モーダル関連のDOM要素
 const charModal = document.getElementById('char-modal');
@@ -21,6 +23,7 @@ const charNameInput = document.getElementById('char-name');
 const charColorInput = document.getElementById('char-color');
 const charMoraRateInput = document.getElementById('char-mora-rate');
 const charSpeechRateInput = document.getElementById('char-speech-rate');
+const charPostSpeechDelayInput = document.getElementById('char-post-speech-delay');
 const charOutputGroupInput = document.getElementById('char-output-group');
 
 // 出力グループのコンボボックス初期化
@@ -136,6 +139,7 @@ function openCharModal(charId = null) {
     charColorInput.value = char.color;
     charMoraRateInput.value = char.moraRate || 150;
     charSpeechRateInput.value = char.speechRate || 1.0;
+    charPostSpeechDelayInput.value = getPostSpeechDelay(char);
     charOutputGroupInput.value = char.outputGroup || '';
     modalDeleteBtn.style.display = 'block';
   } else {
@@ -144,6 +148,7 @@ function openCharModal(charId = null) {
     charColorInput.value = '#646cff';
     charMoraRateInput.value = 150;
     charSpeechRateInput.value = 1.0;
+    charPostSpeechDelayInput.value = DEFAULT_POST_SPEECH_DELAY;
     charOutputGroupInput.value = '';
     modalDeleteBtn.style.display = 'none';
   }
@@ -172,6 +177,7 @@ export async function persistCharacters() {
 function saveCharacter() {
   const name = charNameInput.value.trim();
   if (!name) return alert('名前を入力してください');
+  if (!charPostSpeechDelayInput.reportValidity()) return;
 
   saveHistory();
   const newChar = {
@@ -180,6 +186,7 @@ function saveCharacter() {
     color: charColorInput.value,
     moraRate: parseFloat(charMoraRateInput.value),
     speechRate: parseFloat(charSpeechRateInput.value),
+    postSpeechDelay: charPostSpeechDelayInput.valueAsNumber,
     outputGroup: charOutputGroupInput.value.trim()
   };
 
@@ -324,6 +331,8 @@ groupModal.onclick = (e) => {
  */
 export function updateSelectionUI() {
   const selectedSub = state.subtitles.find(s => s.id === state.selectedSubtitleId);
+  deleteObjectBtn.disabled = !selectedSub;
+  deleteObjectBtn.title = selectedSub ? '選択したオブジェクトを削除' : 'オブジェクトを選択すると削除できます';
   if (selectedSub) {
     textInput.value = selectedSub.text;
     addBtn.textContent = '編集';
@@ -377,10 +386,7 @@ function addOrEditSubtitle() {
 
   if (!isPin) {
     if (!char) return; // 未定義エラー回避
-    const moras = countMoras(text);
-    const moraLength = moras * ((char.moraRate || 150) / 1000);
-    const speechRate = char.speechRate || 1.0;
-    duration = Math.max(0.2, moraLength / speechRate); // 最低0.2秒
+    duration = calculateSubtitleDuration(text, char);
     charName = char.name;
     charColor = char.color;
   }
@@ -450,10 +456,36 @@ function addOrEditSubtitle() {
   textInput.value = '';
 }
 
+// 選択した字幕・ピンだけを削除し、既存の履歴操作で戻せるようにする。
+deleteObjectBtn.onclick = () => {
+  const index = state.subtitles.findIndex(sub => sub.id === state.selectedSubtitleId);
+  if (index === -1) return;
+  saveHistory();
+  state.subtitles.splice(index, 1);
+  state.selectedSubtitleId = null;
+  renderSubtitles();
+  updateSelectionUI();
+  updateTimeUI();
+};
+
 // イベントバインディング
+// ボタンを押す際にも入力欄の選択範囲を維持する。
+rubyBtn.addEventListener('mousedown', (e) => e.preventDefault());
+rubyBtn.onclick = () => {
+  const start = textInput.selectionStart;
+  const end = textInput.selectionEnd;
+  if (start === end) return;
+
+  const selectedText = textInput.value.slice(start, end);
+  textInput.setRangeText(`|${selectedText}《》`, start, end, 'end');
+  const caret = start + selectedText.length + 2;
+  textInput.focus();
+  textInput.setSelectionRange(caret, caret);
+  textInput.dispatchEvent(new Event('input', { bubbles: true }));
+};
 addBtn.onclick = addOrEditSubtitle;
 textInput.onkeydown = (e) => {
-  if (e.key === 'Enter') addOrEditSubtitle();
+  if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) addOrEditSubtitle();
 };
 
 /**

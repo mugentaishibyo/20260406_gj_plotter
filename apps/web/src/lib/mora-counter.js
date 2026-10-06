@@ -7,7 +7,7 @@
 export function extractReading(text) {
   if (!text) return '';
   return text
-    .replace(/\|([^《]+)《([^》]+)》/g, "$2")
+    .replace(/[|｜]([^《]+)《([^》]*)》/g, (_, base, reading) => reading || base)
     .replace(/([一-龠々]+)《([^》]+)》/g, "$2");
 }
 
@@ -17,7 +17,7 @@ export function extractReading(text) {
 export function extractBaseText(text) {
   if (!text) return '';
   return text
-    .replace(/\|([^《]+)《([^》]+)》/g, "$1")
+    .replace(/[|｜]([^《]+)《([^》]*)》/g, "$1")
     .replace(/([一-龠々]+)《([^》]+)》/g, "$1");
 }
 

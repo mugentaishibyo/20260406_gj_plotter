@@ -32,6 +32,7 @@
       <section class="timeline-section">
         <div class="timeline-header">
           <span id="current-time-display">00:00:00.000</span>
+          <button type="button" id="delete-object-btn" disabled title="オブジェクトを選択すると削除できます">削除</button>
         </div>
         <div class="timeline-container" id="timeline-container">
           <div class="timeline-content" id="timeline-content">
@@ -62,6 +63,7 @@
 
         <div class="input-row">
           <input type="text" id="text-input" placeholder="セリフを入力..." autocomplete="off">
+          <button type="button" id="ruby-btn" class="secondary-btn" title="選択した文字にルビを設定">ルビ</button>
           <button id="add-btn">追加</button>
         </div>
 
@@ -71,7 +73,7 @@
             プロジェクト読込
             <input type="file" id="load-project" accept=".json" hidden>
           </label>
-          <button class="export-btn danger-btn" id="clear-project">クリア</button>
+          <button class="export-btn danger-btn" id="clear-project">プロジェクトのクリア</button>
         </div>
 
         <div class="export-section">
@@ -108,6 +110,10 @@
           <div class="input-group">
             <label>話速倍率</label>
             <input type="number" id="char-speech-rate" step="0.1" value="1.0">
+          </div>
+          <div class="input-group">
+            <label for="char-post-speech-delay">発話後ディレイ (ミリ秒)</label>
+            <input type="number" id="char-post-speech-delay" min="0" step="1" value="800" required>
           </div>
           <div class="input-group">
             <label>出力グループ</label>
