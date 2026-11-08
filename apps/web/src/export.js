@@ -44,7 +44,9 @@ export function setupExportEvents() {
 
     // グループごとの台本を追加
     Object.keys(groups).forEach((groupName) => {
-      const filename = groupName ? `gj_script_${groupName}.csv` : 'gj_script.csv';
+      // 安全なファイル名にするためスラッシュ等を除去 (Zip Path Traversal対策)
+      const safeGroupName = groupName.replace(/[\/\\]/g, '_');
+      const filename = safeGroupName ? `gj_script_${safeGroupName}.csv` : 'gj_script.csv';
       addCsvToZip(filename, groups[groupName]);
     });
 
