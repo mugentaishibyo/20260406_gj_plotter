@@ -1,0 +1,4 @@
+## 2025-02-14 - Prevent Zip Path Traversal in export.js
+**Vulnerability:** User-defined `outputGroup` properties from character configurations were used directly to construct the filename of CSV files added to a ZIP archive (e.g., `` `gj_script_${groupName}.csv` ``). A maliciously crafted group name containing path separators (`/` or `\`) could lead to path traversal, creating arbitrary directories inside the Zip file and potentially allowing Zip Slip vulnerabilities when extracted by insecure tools.
+**Learning:** In applications where user input is directly used to generate file structures, especially ZIP archives via libraries like `jszip`, developers must sanitize filenames by removing or replacing path separators and invalid characters.
+**Prevention:** Always sanitize user-provided file and directory names. For Zip archives, explicitly strip `/` and `\` using `.replace(/[\/\\]/g, '_')` before appending files to the archive.
