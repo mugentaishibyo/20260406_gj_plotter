@@ -3,7 +3,7 @@
   "name": "gj-voiplotter",
   "compatibility_date": "2024-06-06",
   "build": {
-    "command": "npm install && npm run web:build",
+    "command": "npm run web:build",
     "cwd": "./"
   },
   "assets": {
