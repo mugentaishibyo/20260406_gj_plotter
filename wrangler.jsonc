@@ -2,10 +2,8 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "gj-voiplotter",
   "compatibility_date": "2024-06-06",
-  "build": {
-    "command": "npm run web:build",
-    "cwd": "./"
-  },
+  // ビルドはCloudflareダッシュボードのビルドコマンド (npm run web:build) で行う。
+  // ここに build.command を置くと deploy 時に二重ビルドになるため定義しない。
   "assets": {
     "directory": "./docs"
   }
